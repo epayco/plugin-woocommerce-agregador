@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @since             1.0.0
  * @package           ePaycoagregador_Woocommerce
