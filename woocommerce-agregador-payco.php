@@ -650,8 +650,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $signature="";
                     $x_signature_p= wp_kses_post($_REQUEST['x_signature']);
                     $x_signature_e=esc_html($_REQUEST['x_signature']);
-                    var_dump("s");
-                    die();
+                    
                     if($x_signature_p || $x_signature_e ){
                        $order_id = trim(sanitize_text_field($_GET['order_id']));
                        $x_ref_payco = trim(sanitize_text_field($_REQUEST['x_ref_payco']));
