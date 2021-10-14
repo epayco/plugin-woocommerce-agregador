@@ -45,7 +45,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->init_settings();
                 $this->msg['message']   = "";
                 $this->msg['class']     = "";
-                $this->title = $this->get_option('epayc_agregador_title');
+                $this->title = $this->get_option('epayco_agregador_title');
                 $this->epayco_agregador_customerid = $this->get_option('epayco_agregador_customerid');
                 $this->epayco_agregador_secretkey = $this->get_option('epayco_agregador_secretkey');
                 $this->epayco_agregador_publickey = $this->get_option('epayco_agregador_publickey');
@@ -394,7 +394,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $product_sku = $productName->sku;
       
                 //Busca si ya se restauro el stock
-
+        
                 if (!EpaycoAgregadorOrder::ifExist($order_id)) {
                     //si no se restauro el stock restaurarlo inmediatamente
                     EpaycoAgregadorOrder::create($order_id,1);
@@ -767,12 +767,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 ){
                                 $order->update_status('epayco-cancelled');
                                 $order->add_order_note('Pago fallido');
+                                
                                 }else{
                                 $message = 'Pago rechazado' .$x_ref_payco;
                                 $messageClass = 'woocommerce-error';
                                 $order->update_status('epayco-cancelled');
                                 $order->add_order_note('Pago fallido');
                                 $this->restore_order_stock($order->id);
+                                        
+                                
                                 }
                                 echo "2";
                             }break;
