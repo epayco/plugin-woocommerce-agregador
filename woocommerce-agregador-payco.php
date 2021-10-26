@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->icon = 'https://multimedia.epayco.co/epayco-landing/btns/epayco-logo-fondo-claro-lite.png';
+                $this->icon = plugin_dir_url(__FILE__).'lib/logo.png';
                 $this->method_title = __('ePayco Checkout Agregador', 'epayco_agregador_woocommerce');
                 $this->method_description = __('Acepta tarjetas de credito, depositos y transferencias.', 'epayco_agregador_woocommerce');
                 $this->order_button_text = __('Pagar', 'epayco_agregador_woocommerce');
@@ -128,7 +128,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 </style>
                 <div class="container-fluid">
                     <div class="panel panel-default" style="">
-                        <img  src="https://multimedia.epayco.co/epayco-landing/btns/epayco-logo-fondo-claro-lite.png">
+                        <img  src="<?php echo plugin_dir_url(__FILE__).'lib/logo.png' ?>">
                         <div class="panel-heading">
                             <h3 class="panel-title"><i class="fa fa-pencil"></i>Configuración <?php _e('ePayco', 'epayco_agregador_woocommerce'); ?></h3>
                         </div>
@@ -408,12 +408,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $msgEpaycoCheckout = '<span class="animated-points">Loading payment methods</span>
                                <br><small class="epayco-subtitle"> If they do not load automatically, click on the "Pay with ePayco" button</small>';
 
-                    $epaycoButtonImage = 'https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png';
+                    $epaycoButtonImage = plugin_dir_url(__FILE__).'lib/Boton-color-Ingles.png';
 
                 }else{
                     $msgEpaycoCheckout = '<span class="animated-points">Cargando métodos de pago</span>
                     <br><small class="epayco-subtitle"> Si no se cargan automáticamente, de clic en el botón "Pagar con ePayco</small>';
-                    $epaycoButtonImage = 'https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png';
+                    $epaycoButtonImage = plugin_dir_url(__FILE__).'lib/Boton-color-espanol.png';
                 }
 
                 echo('
