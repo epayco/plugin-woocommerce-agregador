@@ -505,6 +505,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_amount = sanitize_text_field($_REQUEST['x_amount']);
                     $x_currency_code = sanitize_text_field($_REQUEST['x_currency_code']);
                     $x_test_request = trim(sanitize_text_field($_REQUEST['x_test_request']));
+                    $x_approval_code = trim(sanitize_text_field($_REQUEST['x_approval_code']));
                 }
                 else {
 
@@ -526,6 +527,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_amount = trim($validationData['x_amount']);
                     $x_currency_code = trim($validationData['x_currency_code']);
                     $x_test_request = trim($validationData['x_test_request']);
+                    $x_approval_code = trim($validationData['x_approval_code']);
                 }
 
                 // Validamos la firma
@@ -541,7 +543,27 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 update_option('epayco_agregador_order_status', $isTestTransaction);
                 $isTestMode = get_option('epayco_agregador_order_status') == "yes" ? "true" : "false";
                 
-                if($authSignature == $x_signature){
+                if($order->get_total() == $x_amount){
+                    if($isTestTransaction == $this->epayco_agregador_testmode && $x_approval_code == "000000"){
+                        $validation = true;
+                    }
+                    if($isTestTransaction == $this->epayco_agregador_testmode ){
+                        if($x_approval_code != "000000" && $x_cod_transaction_state == 1){
+                            $validation = true;
+                        }else{
+                            if($x_cod_transaction_state != 1){
+                                $validation = true;
+                            }else{
+                                $validation = false;
+                            }
+                        }
+                        
+                    }
+                }else{
+                     $validation = false;
+                }
+
+                if($authSignature == $x_signature && $validation){
                     switch ($x_cod_transaction_state) {
                         case 1: {
                             if($current_state == "epayco_failed" ||
