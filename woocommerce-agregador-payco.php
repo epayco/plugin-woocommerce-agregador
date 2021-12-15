@@ -542,12 +542,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $isTestTransaction = $x_test_request == 'TRUE' ? "yes" : "no";
                 update_option('epayco_agregador_order_status', $isTestTransaction);
                 $isTestMode = get_option('epayco_agregador_order_status') == "yes" ? "true" : "false";
-                
+                $isTestPluginMode = $this->epayco_agregador_testmode;
                 if($order->get_total() == $x_amount){
-                    if($isTestTransaction == $this->epayco_agregador_testmode && $x_approval_code == "000000"){
+                    if("yes" == $isTestPluginMode && $x_approval_code == "000000"){
                         $validation = true;
                     }
-                    if($isTestTransaction == $this->epayco_agregador_testmode ){
+                    if("no" == $isTestPluginMode ){
                         if($x_approval_code != "000000" && $x_cod_transaction_state == 1){
                             $validation = true;
                         }else{
@@ -562,6 +562,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }else{
                      $validation = false;
                 }
+
+                
 
                 if($authSignature == $x_signature && $validation){
                     switch ($x_cod_transaction_state) {
@@ -630,7 +632,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         $current_state == "epayco-processing" ||
                                         $current_state == "epayco-completed" ||
                                         $current_state == "processing-test" ||
-                                        $current_state == "completed-test"
+                                        $current_state == "completed-test"||
+                                        $current_state == "processing" ||
+                                        $current_state == "completed"
                                     ){}else{
                                         $message = 'Pago rechazado: ' .$x_ref_payco;
                                         $messageClass = 'woocommerce-error';
@@ -685,7 +689,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         $current_state == "epayco-processing" ||
                                         $current_state == "epayco-completed" ||
                                         $current_state == "processing-test" ||
-                                        $current_state == "completed-test"
+                                        $current_state == "completed-test"||
+                                        $current_state == "processing" ||
+                                        $current_state == "completed"
                                     ){}else{
                                         $message = 'Pago rechazado: ' .$x_ref_payco;
                                         $messageClass = 'woocommerce-error';
@@ -729,7 +735,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         $current_state == "epayco-processing" ||
                                         $current_state == "epayco-completed" ||
                                         $current_state == "processing-test" ||
-                                        $current_state == "completed-test"
+                                        $current_state == "completed-test"||
+                                        $current_state == "processing" ||
+                                        $current_state == "completed"
                                     ){}else{
                                         $message = 'Pago rechazado: ' .$x_ref_payco;
                                         $messageClass = 'woocommerce-error';
@@ -765,7 +773,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         $current_state == "epayco-processing" ||
                                         $current_state == "epayco-completed" ||
                                         $current_state == "processing-test" ||
-                                        $current_state == "completed-test"
+                                        $current_state == "completed-test"||
+                                        $current_state == "processing" ||
+                                        $current_state == "completed"
                                     ){}else{
                                         $message = 'Pago rechazado: ' .$x_ref_payco;
                                         $messageClass = 'woocommerce-error';
