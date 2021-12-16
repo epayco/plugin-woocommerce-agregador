@@ -399,7 +399,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         </p>                        
                         <center>
 
-                        <form>
+                        <form id="appAgregador">
                             <script
                                 src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js?version=1639601662446"
                                 class="epayco-button"
@@ -427,6 +427,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             </script>
                         </form>
                         </center>
+                        <script language="Javascript">
+                            const app = document.getElementById("appAgregador");
+                            window.onload = function() {
+                            document.addEventListener("contextmenu", function(e){
+                                e.preventDefault();
+                            }, false);
+                            } 
+                        </script>
                 ',trim($this->epayco_agregador_publickey),
                     $testMode,
                     $descripcion,
@@ -816,6 +824,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $message = 'Firma no valida';
                     $messageClass = 'error';
                     echo $message;
+                    $order->update_status('epayco-failed');
+                    $order->add_order_note('Los datos de la orden no concuerdan!');
+                    $this->restore_order_stock($order->id);
                 }
                 
                  if (isset($_REQUEST['confirmation'])) {
