@@ -933,6 +933,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function enqueue_scripts()
             {
+                wp_enqueue_script('agregador-epayco', plugin_dir_url(__FILE__).'lib/epayco.js', array(), $this->version, true );
                 wp_enqueue_style('frontend-epayco-agregador',  plugin_dir_url(__FILE__).'lib/epayco.css', array(), $this->version, null);
             }
         }
