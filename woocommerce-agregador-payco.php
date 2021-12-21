@@ -401,7 +401,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                         <form id="appAgregador">
                             <script
-                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js?version=1639601662446"
+                                src="https://checkout.epayco.co/checkout.js"
                                 class="epayco-button"
                                 data-epayco-key="%s"
                                 data-epayco-test="%s"
