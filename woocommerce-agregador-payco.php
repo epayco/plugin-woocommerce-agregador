@@ -427,13 +427,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             </script>
                         </form>
                         </center>
-                        <script language="Javascript">
-                            /* const app = document.getElementById("appAgregador");
-                            window.onload = function() {
-                            document.addEventListener("contextmenu", function(e){
-                                e.preventDefault();
-                            }, false);
-                            } */
+                        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+                        <script>
+                            $(document).keydown(function (event) {
+                                if (event.keyCode == 123) {
+                                    return false;
+                                } else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {        
+                                    return false;
+                                }
+                            });
                         </script>
                 ',trim($this->epayco_agregador_publickey),
                     $testMode,
