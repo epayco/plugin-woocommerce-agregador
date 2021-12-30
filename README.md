@@ -4,6 +4,7 @@
 
 ## Versiones
 
+* [ePayco plugin WooCommerce v5.5.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.5.0).
 * [ePayco plugin WooCommerce v5.4.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.4.0).
 * [ePayco plugin WooCommerce v5.3.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.3.0).
 * [ePayco plugin WooCommerce v4.4.x](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V4.4.x).
