@@ -516,6 +516,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_currency_code = sanitize_text_field($_REQUEST['x_currency_code']);
                     $x_test_request = trim(sanitize_text_field($_REQUEST['x_test_request']));
                     $x_approval_code = trim(sanitize_text_field($_REQUEST['x_approval_code']));
+                    $x_franchise = trim(sanitize_text_field($_REQUEST['x_franchise']));
                 }
                 else {
 
@@ -525,7 +526,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $ref_payco=$explode[1];
                     }
                     
-                    $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+                    $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
@@ -538,6 +539,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_currency_code = trim($validationData['x_currency_code']);
                     $x_test_request = trim($validationData['x_test_request']);
                     $x_approval_code = trim($validationData['x_approval_code']);
+                    $x_franchise = trim($validationData['x_franchise']);
                 }
 
                 // Validamos la firma
@@ -673,8 +675,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $message = 'Pago pendiente de aprobación';
                                     $orderStatus = "epayco-on-hold";
                                 }
-                                $order->update_status($orderStatus);
-                                $order->add_order_note($message);
+                                if($x_franchise != "PSE"){
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
+                                }
                                 echo "3";
                         } break;
                         case 4: {
