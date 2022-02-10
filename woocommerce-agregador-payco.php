@@ -403,7 +403,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                         <form id="appAgregador">
                             <script
-                                src="https://checkout.epayco.co/checkout.js"
+                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js?version=1643645084821"
                                 class="epayco-button"
                                 data-epayco-key="%s"
                                 data-epayco-test="%s"
@@ -528,7 +528,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $ref_payco=$explode[1];
                     }
                     
-                    $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
+                    $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
@@ -583,45 +583,68 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                    
                     switch ($x_cod_transaction_state) {
                         case 1: {
-                            if($current_state == "epayco_failed" ||
-                                $current_state == "epayco_cancelled" ||
-                                $current_state == "failed" ||
-                                $current_state == "epayco-cancelled" ||
-                                $current_state == "epayco-failed"
-                            ){}else{
-                                 //Busca si ya se descontó el stock
+                            if($isTestMode=="true"){
+                                $message = 'Pago exitoso Prueba';
+                                switch ($this->epayco_agregador_endorder_state ){
+                                    case 'epayco-processing':{
+                                        $orderStatus ='epayco_processing';
+                                    }break;
+                                    case 'epayco-completed':{
+                                        $orderStatus ='epayco_completed';
+                                    }break;
+                                    case 'processing':{
+                                        $orderStatus ='processing_test';
+                                    }break;
+                                    case 'completed':{
+                                        $orderStatus ='completed_test';
+                                    }break;
+                                }
+                            }else{
+                                $message = 'Pago exitoso';
+                                $orderStatus = $this->epayco_agregador_endorder_state;
+                            }
+
+                        if($current_state == "epayco_failed" ||
+                            $current_state == "epayco_cancelled" ||
+                            $current_state == "failed" ||
+                            $current_state == "epayco-cancelled" ||
+                            $current_state == "epayco-failed"
+                        ){
                             if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
-                                
                                 //se descuenta el stock
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
-                                    
-                            }
-                            if($isTestMode=="true"){
-                                    $message = 'Pago exitoso Prueba';
-                                    switch ($this->epayco_agregador_endorder_state ){
-                                        case 'epayco-processing':{
-                                            $orderStatus ='epayco_processing';
-                                        }break;
-                                        case 'epayco-completed':{
-                                            $orderStatus ='epayco_completed';
-                                        }break;
-                                        case 'processing':{
-                                            $orderStatus ='processing_test';
-                                        }break;
-                                        case 'completed':{
-                                            $orderStatus ='completed_test';
-                                        }break;
-                                    }
-                                }else{
-                                    $message = 'Pago exitoso';
-                                    $orderStatus = $this->epayco_agregador_endorder_state;
+                               if($current_state != $orderStatus){
+                                    if($isConfirmation){
+                                        $this->restore_order_stock($order->get_id(),"decrease");
+                                        $order->payment_complete($x_ref_payco);
+                                        $order->update_status($orderStatus);
+                                        $order->add_order_note($message);
+                                    } 
                                 }
-                                $order->payment_complete($x_ref_payco);
-                                $order->update_status($orderStatus);
-                                $order->add_order_note($message);
-                                echo "1";
                             }
-                          
+                        }else{
+                             //Busca si ya se descontó el stock
+                            if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
+                                //se descuenta el stock
+                                EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
+                            }
+
+                            if($current_state != $orderStatus){
+                                if($isConfirmation){
+                                    if($isTestMode=="true" && $current_state != "epayco_on_hold"){
+                                        $this->restore_order_stock($order->get_id());
+                                    }
+                                    if($isTestMode != "true" && $current_state != "epayco-on-hold"){
+                                        $this->restore_order_stock($order->get_id());
+                                    }
+                                    
+                                    $order->payment_complete($x_ref_payco);
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
+                                } 
+                            }
+                        }
+                        echo "1";  
                         } break;
                         case 2: {
                             
