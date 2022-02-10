@@ -577,8 +577,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                      $validation = false;
                 }
 
-                
-
                 if($authSignature == $x_signature && $validation){
                    
                     switch ($x_cod_transaction_state) {
@@ -615,7 +613,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                                if($current_state != $orderStatus){
                                     if($isConfirmation){
-                                        $this->restore_order_stock($order->get_id(),"decrease");
+                                        if($isTestMode=="true"){
+                                            $this->restore_order_stock($order->get_id(),"decrease");
+                                        }
                                         $order->payment_complete($x_ref_payco);
                                         $order->update_status($orderStatus);
                                         $order->add_order_note($message);
@@ -697,7 +697,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 }
                         } break;
                         case 3: {
-                            
                             //Busca si ya se restauro el stock y si se configuro reducir el stock en transacciones pendientes
                             if (!EpaycoAgregadorOrder::ifStockDiscount($order_id) && $this->get_option('epayco_agregador_reduce_stock_pending') != 'yes') {
                                 //actualizar el stock
