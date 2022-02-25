@@ -35,7 +35,20 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->icon = plugin_dir_url(__FILE__).'lib/logo.png';
+                $url_icon = plugin_dir_url(__FILE__)."lib";
+                $dir_ = __DIR__."/lib";
+                if(is_dir($dir_)) {
+                    $gestor = opendir($dir_);
+                    if($gestor){
+                        while (($image = readdir($gestor)) !== false){
+                            if($image != '.' && $image != '..'){
+                                if($image == "epayco.png"){
+                                    $this->icon = $url_icon."/".$image;;
+                                }
+                            }
+                        }
+                    }
+                }
                 $this->method_title = __('ePayco Checkout', '
                 ');
                 $this->method_description = __('Acepta tarjetas de credito, depositos y transferencias.', 'epayco_agregador_woocommerce');
@@ -132,6 +145,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 <div class="container-fluid">
                     <div class="panel panel-default" style="">
                         <img  src="<?php echo plugin_dir_url(__FILE__).'lib/logo.png' ?>">
+                        <div id="path_upload"  hidden>
+                            <?php echo plugin_dir_url(__FILE__).'lib/upload.php' ?>
+                        </div>
+                        <div id="path_delete"  hidden>
+                            <?php echo plugin_dir_url(__FILE__).'lib/delete.php' ?>
+                        </div>
                         <div class="panel-heading">
                             <h3 class="panel-title"><i class="fa fa-pencil"></i>Configuración <?php _e('ePayco', 'epayco_agregador_woocommerce'); ?></h3>
                         </div>
@@ -147,9 +166,101 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 <?php
                                 if ($this->is_valid_for_use()) :
                                     $this->generate_settings_html();
+                                    echo'<tr valign="top">
+                                          <th scope="row" class="titledesc">
+                                             <label for="woocommerce_epayco_enabled">'. __( 'ePayco: cambiar logo', 'epayco-woocommerce' ) .'</label>
+                                          </th>
+                                            <td class="forminp">
+                                            <script src="https://code.jquery.com/jquery-1.12.1.js"></script>
+
+                                            <script>
+                                                $(document).ready(function() {
+                                                    $(".upload").on("click", function() {
+                                                        var url = $("#path_upload")[0].innerHTML.trim();
+                                                        enviar(url,"upload")
+                                                        return false;
+                                                    });
+                                                    $(".delete").on("click", function() {
+                                                        var url = $("#path_delete")[0].innerHTML.trim();
+                                                        enviar(url,"delete")
+                                                        return false;
+                                                    });
+                                                  function enviar(url,accion){
+                                                    if(accion == "upload"){
+                                                      var formData = new FormData();
+                                                      var files = $("#image")[0].files[0];
+                                                      formData.append("file",files);
+                                                       $.ajax({
+                                                           url: url,
+                                                           type: "post",
+                                                           data: formData,
+                                                           contentType: false,
+                                                           processData: false,
+                                                           success: function(response) {
+                                                               if (response != 0) {
+                                                                   $(".card-img-top").attr("src", response);
+                                                                    alert("el logo se subio de forma exitosa!");
+                                                               } else {
+                                                                   alert("Formato de imagen incorrecto.");
+                                                               }
+                                                           }
+                                                       });
+                                                    }else{
+                                                        $.ajax({
+                                                           url: url,
+                                                           type: "post",
+                                                           data: {},
+                                                           contentType: false,
+                                                           processData: false,
+                                                           success: function(response) {
+                                                               if (response != 0) {
+                                                                   alert("el logo se elimino de forma exitosa!");
+                                                               } else {
+                                                                   alert("el logo no se elimino!");
+                                                               }
+                                                           }
+                                                       });
+                                                    }
+                                                  }  
+                                                });
+                                            </script>
+                                            <fieldset>
+                                                <legend class="screen-reader-text">
+                                                </legend>
+                                                <form method="post" action="#" enctype="multipart/form-data">
+                                                    <label for="woocommerce_epayco_enabled">
+                                                     <input type="file" class="form-control-file" name="image" id="image">
+                                                      </label>
+                                                      <br><input type="button" class="btn btn-primary upload" value="Subir">
+                                                      <input type="button" class="btn btn-primary delete" value="Eliminar">
+                                                  </form>  
+                                                <br>'.
+                                                $path  = '';
+                                                $url_icon = plugin_dir_url(__FILE__)."lib";
+                                                $dir_ = __DIR__."/lib";
+                                                if(is_dir($dir_)) {
+                                                    try {
+                                                        $gestor = opendir($dir_);
+                                                        if($gestor){
+                                                            while (($image = readdir($gestor)) !== false){
+                                                                if($image != '.' && $image != '..'){
+                                                                    if($image == "epayco.png"){
+                                                                        $image_ = $url_icon."/".$image;
+                                                                        echo "<img class='card-img-top' src='$image_' width='200px'/><br>";
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }catch (Exception $e){
+                                                        __return_null();
+                                                    }
+                                                }'.
+                                            </fieldset>
+                                          </td>
+                                        </tr>';
                                 else :
                                     if ( is_admin() && ! defined( 'DOING_AJAX')) {
-                                        echo '<div class="error"><p><strong>' . __( 'ePayco: Requiere que la moneda sea USD O COP', 'epayco_agregador_woocommerce' ) . '</strong>: ' . sprintf(__('%s', 'woocommerce-mercadopago' ), '<a href="' . admin_url() . 'admin.php?page=wc-settings&tab=general#s2id_woocommerce_currency">' . __( 'Click aquí para configurar!', 'epayco_agregador_woocommerce') . '</a>' ) . '</p></div>';
+                                        echo '<div class="error"><p><strong>' . __( 'ePayco: cambio de logo', 'epayco_agregador_woocommerce' ) . '</strong>: ' . sprintf(__('%s', 'epayco_agregador_woocommerce' ), '<a href="' . admin_url() . 'admin.php?page=wc-settings&tab=general#s2id_woocommerce_currency">' . __( 'Click aquí para configurar!', 'epayco_agregador_woocommerce') . '</a>' ) . '</p></div>';
                                     }
                                 endif;
                                 ?>
