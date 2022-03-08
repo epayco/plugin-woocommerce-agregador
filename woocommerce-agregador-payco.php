@@ -400,14 +400,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'default' => __('Checkout ePayco (Tarjetas de crédito,debito,efectivo)', 'epayco_agregador_woocommerce'),
                         //'desc_tip' => true,
                     ),
-                    'epayco_agregador_customerid' => array(
-                        'title' => __('<span class="epayco-required">P_CUST_ID_CLIENTE</span>', 'epayco_agregador_woocommerce'),
-                        'type' => 'text',
-                        'description' => __('ID de cliente que lo identifica en ePayco. Lo puede encontrar en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
-                        'default' => '',
-                        //'desc_tip' => true,
-                        'placeholder' => '',
-                    ),
                     'epayco_agregador_testmode' => array(
                         'title' => __('Sitio en pruebas', 'epayco_agregador_woocommerce'),
                         'type' => 'checkbox',
@@ -477,6 +469,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'default' => '3000000',
                         //'desc_tip' => true,
                         'placeholder' => '3000000',
+                    ),
+                    'epayco_agregador_customerid' => array(
+                        'title' => __('<span class="epayco-required">P_CUST_ID_CLIENTE</span>', 'epayco_agregador_woocommerce'),
+                        'type' => 'text',
+                        'description' => __('ID de cliente que lo identifica en ePayco. Lo puede encontrar en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
+                        'default' => '',
+                        //'desc_tip' => true,
+                        'placeholder' => '',
                     ),
                     'epayco_agregador_secretkey' => array(
                         'title' => __('<span class="epayco-required">P_KEY</span>', 'epayco_agregador_woocommerce'),
