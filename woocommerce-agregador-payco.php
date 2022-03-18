@@ -242,8 +242,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                             
                                                 var modal = document.getElementById("myModal");
                                                 var url_validate = $("#path_validate")[0].innerHTML.trim();
-                                                const epayco_publickey = $("input:text[name=woocommerce_epayco_epayco_publickey]").val().replace(/\s/g,"");
-                                                const epayco_privatey = $("input:text[name=woocommerce_epayco_epayco_privatekey]").val().replace(/\s/g,"");
+                                                const epayco_publickey = $("input:text[name=woocommerce_epayco_agregador_epayco_agregador_publickey]").val().replace(/\s/g,"");
+                                                const epayco_privatey = $("input:text[name=woocommerce_epayco_agregador_epayco_agregador_privatekey]").val().replace(/\s/g,"");
                                                 if (epayco_publickey !== "" && 
                                                     epayco_privatey !== "") {
                                                         var formData = new FormData();
