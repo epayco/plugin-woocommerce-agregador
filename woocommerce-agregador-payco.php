@@ -752,7 +752,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
                         <script>
                             window.onload = function() {
-                                document.addEventListener(\"contextmenu\", function(e){
+                                document.addEventListener("contextmenu", function(e){
                                     e.preventDefault();
                                 }, false);
                             } 
