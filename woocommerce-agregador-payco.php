@@ -756,7 +756,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         <p style="text-align: center;" class="epayco-title">
                            '.$msgEpaycoCheckout.'
                         </p>         
-                        <div hidden id="split">'.$split.'</div>                  
+                        <div hidden id="split">'.$split.'</div>  
+                        <div hidden id="response">'.$redirect_url.'</div>                  
                         <center>
                         <a id="btn_epayco_agregador" href="#">
                             <img src="'.$epaycoButtonImage.'">
@@ -822,8 +823,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
                             var bntPagar = document.getElementById("btn_epayco_agregador");
                             bntPagar.addEventListener("click", openChekout);
-    
-                            handler.onCloseModal = function () {};
+                            let response = document.getElementById("response").textContent;
+                            handler.onCloseModal = function () {
+                                window.location.href = response;
+                            };
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
