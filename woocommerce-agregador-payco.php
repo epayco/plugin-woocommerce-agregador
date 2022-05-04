@@ -657,11 +657,20 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
                     $receiversa['id'] = $epayco_p_cust_id_client[0];
                     $epayco_super_product = get_post_meta( $product["product_id"], '_super_product_a' );
-                    if($epayco_super_product[0] == "yes"){
-                        $receiversa['fee'] = floatval($product['total']);
+                    $epayco_epayco_comition = get_post_meta( $product["product_id"], 'epayco_comition_a' );
+
+                    if($epayco_super_product[0] != "yes"){
+                        $productTotalComision = floatval($epayco_epayco_comition[0])*$product["quantity"];
+                        $receiversa['total'] = floatval($product['total']) ;
+                        $fee = floatval($product['total'])-$productTotalComision;
+                        $receiversa['iva'] = 0;
+                        $receiversa['base_iva'] = 0;
+                        $receiversa['fee'] = $fee;
                     }else{
-                        $epayco_epayco_comition = get_post_meta( $product["product_id"], 'epayco_comition_a' );
-                        $receiversa['fee'] = floatval($epayco_epayco_comition[0]);
+                        $receiversa['total'] =  floatval($product['total']);
+                        $receiversa['iva'] = 0;
+                        $receiversa['base_iva'] = 0;
+                        $receiversa['fee'] = 0;
                     }
                     $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                     $descripcionParts[] = $clearData;
@@ -764,7 +773,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                          </a>
                         <form id="appAgregador">
                             <script
-                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js?version=1643645084821"
+                                src="https://checkout.epayco.co/checkout.js"
                                 >
                             </script>
                             <script>
@@ -776,8 +785,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             var data = {
                                 name: "%s",
                                 description: "%s",
-                                /*invoice: "",*/
-                                extra1:"%s",
+                                invoice:"%s",
                                 currency: "%s",
                                 amount: "%s",
                                 tax_base: "%s",
@@ -799,13 +807,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             if(split == "true"){
                                 var js_array ='.json_encode($receiversInfo).';
                                 let split_receivers = [];
-                                for(var jsa of js_array){
+                                 for(var jsa of js_array){
                                     split_receivers.push({
                                         "id" :  jsa.id,
-                                        "total": jsa.fee,
-                                        "iva" : 0,
-                                        "base_iva": 0,
-                                        "fee" : 0
+                                        "total": jsa.total,
+                                        "iva" : jsa.iva,
+                                        "base_iva": jsa.base_iva,
+                                        "fee" : jsa.fee
                                     });
                                 }
                                 data.split_app_id= "%s", //Id de la cuenta principal
@@ -823,10 +831,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
                             var bntPagar = document.getElementById("btn_epayco_agregador");
                             bntPagar.addEventListener("click", openChekout);
-                            let response = document.getElementById("response").textContent;
-                            handler.onCloseModal = function () {
-                                window.location.href = response;
-                            };
+                            let responseUrl = document.getElementById("response").textContent;
+                            handler.onCloseModal = function () {};
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
@@ -944,7 +950,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $ref_payco=$explode[1];
                     }
                     
-                    $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+                    $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
