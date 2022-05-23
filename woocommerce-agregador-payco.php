@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.0.0
+ * Version:           6.1.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  *Lice
@@ -754,7 +754,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     EpaycoAgregadorOrder::create($order_id,1);
                     $this->restore_order_stock($order->get_id(),"decrease");
                 }
-
+                $force_redirect = $this->force_redirect == "yes" ? "true" : "false";
 
                 if ($this->epayco_agregador_lang !== "es") {
                     $msgEpaycoCheckout = '<span class="animated-points">Loading payment methods</span>
