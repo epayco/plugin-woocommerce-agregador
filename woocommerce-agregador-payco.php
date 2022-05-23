@@ -78,6 +78,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->epayco_agregador_url_confirmation=$this->get_option('epayco_agregador_url_confirmation');
                 $this->epayco_agregador_lang=$this->get_option('epayco_agregador_lang')?$this->get_option('epayco_agregador_lang'):'es';
                 $this->response_data = $this->get_option('response_data');
+                $this->force_redirect = $this->get_option('force_redirect');
                 add_filter('woocommerce_thankyou_order_received_text', array(&$this, 'order_received_message'), 10, 2 );
                 add_action('ePayco_Agregador_init', array( $this, 'ePayco_agregador_successful_request'));
                 add_action('ePayco_Agregador_init_validation', array( $this, 'ePayco_Agregador_successful_validation'));
@@ -591,6 +592,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'default' => '',
                         'placeholder' => ''
                     ),
+                    'force_redirect' => array(
+                        'title' => __('Habilitar redirección al cierre del checkout', 'epayco_woocommerce'),
+                        'type' => 'checkbox',
+                        'label' => __('Habilitar redirección de pagador a URL de respuesta en caso de que cierre el Checkout', 'epayco_agregador_woocommerce'),
+                        'description' => __('Habilite si desea que el usuario pagador al cancelar la transacción o cerrar el checkout sea redirigido a la URL de respuesta configurada.', 'epayco_agregador_woocommerce'),
+                        'default' => 'no',
+                    ),
 
                 );
             }
@@ -831,13 +839,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
                             var bntPagar = document.getElementById("btn_epayco_agregador");
                             bntPagar.addEventListener("click", openChekout);
-                            let responseUrl = document.getElementById("response").textContent;
                             handler.onCloseModal = function () {};
-                            handler.onCreated(function(response) {
-                            }).onResponse(function(response) {
-                            }).onClosed(function(response) {
-                                window.location.href = responseUrl
-                            });
+                            var isForceRedirect='.$force_redirect.';
+                            if(isForceRedirect == true){
+                                let responseUrl = document.getElementById("response").textContent;
+                                handler.onCreated(function(response) {
+                                }).onResponse(function(response) {
+                                }).onClosed(function(response) {
+                                    window.location.href = responseUrl
+                                });
+                            }
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
