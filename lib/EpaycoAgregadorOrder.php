@@ -142,10 +142,6 @@ class EpaycoAgregadorOrder{
 
         dbDelta($sql);
 
-        global $epayco_agregador_db_version;
-
-        add_option('epayco_agregador_db_version', $epayco_agregador_db_version);
-
     }
 
     /**

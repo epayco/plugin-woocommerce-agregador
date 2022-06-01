@@ -1297,7 +1297,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         if($current_state =="epayco-cancelled"||
                                         $current_state == "epayco_cancelled" ){
                                            }else{
-                                             $this->restore_order_stock($order->get_id());
+                                            if($current_state != "epayco-failed"){
+                                                $this->restore_order_stock($order->get_id());
+                                            }
                                         }
                                     }
                                 }else{
@@ -1315,7 +1317,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         $messageClass = 'woocommerce-error';
                                         $order->update_status('epayco-cancelled');
                                         $order->add_order_note($message);
-                                        if($current_state !="epayco-cancelled"){
+                                        if($current_state !="epayco-cancelled" && $current_state != "epayco-failed"){
                                             $this->restore_order_stock($order->get_id());
                                         }
                                     }
@@ -1386,7 +1388,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             $message = 'Firma no valida';
                             $orderStatus = 'epayco-failed';
                             if ($x_cod_transaction_state != 1) {
-                                $this->restore_order_stock($order->get_id());
+                                if($current_state == "epayco_failed" ||
+                                $current_state == "epayco_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                                ){}else{
+                                    $this->restore_order_stock($order->get_id());
+                                }
                             }
                         }
                     }
@@ -1586,20 +1595,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         add_filter( "plugin_action_links_".plugin_basename( __FILE__ ),'epayco_agregador_woocommerce_addon_settings_link' );
     }
 
-
-    //Actualización de versión
-    global $epayco_agregador_db_version;
-    $epayco_agregador_db_version = '1.0';
-    //Verificar si la version de la base de datos esta actualizada
-
     function epayco_agregador_update_db_check()
     {
-        global $epayco_agregador_db_version;
-        $installed_ver = get_option('epayco_agregador_db_version');
-        if ($installed_ver == null || $installed_ver != $epayco_agregador_db_version) {
             EpaycoAgregadorOrder::setup();
-            update_option('epayco_agregador_db_version', $epayco_agregador_db_version);
-        }
     }
 
 
