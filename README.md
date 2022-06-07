@@ -11,7 +11,7 @@
 | 5.5.0   | [ePayco plugin WooCommerce v5.5.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.5.0)     | 5.5.4 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.5.0)    |
 | 5.4.0   | [ePayco plugin WooCommerce v5.4.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.4.0)     | 5.4.4 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.4.0)    |
 | 5.3.0   | [ePayco plugin WooCommerce v5.3.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.3.0)     | 5.0.3 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V5.3.0)    |
-| 4.4.x   | [ePayco plugin WooCommerce v4.4.x](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V4.4.x)     | 4.3.6 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=iFixit&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V4.4.x)    |
+| 4.4.x   | [ePayco plugin WooCommerce v4.4.x](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V4.4.x)     | 4.3.6 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/V4.4.x)    |
 
 
 
