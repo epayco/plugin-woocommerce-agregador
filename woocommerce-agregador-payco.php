@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.1.0
+ * Version:           6.2.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.1.0';
+                $this->version = '6.2.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -663,29 +663,34 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $descripcionParts = array();
                 $receiversData = [];
                 foreach ($order->get_items() as $product) {
-                    $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
-                    $receiversa['id'] = $epayco_p_cust_id_client[0];
-                    $epayco_super_product = get_post_meta( $product["product_id"], '_super_product_a' );
-                    $epayco_epayco_comition = get_post_meta( $product["product_id"], 'epayco_comition_a' );
+                    $epayco_p_cust_id_client = get_post_meta($product["product_id"], 'p_cust_id_client_a');
+                    if ( count($epayco_p_cust_id_client) ) {
+                        $receiversa['id'] = $epayco_p_cust_id_client[0];
+                        $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
+                        $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
 
-                    if($epayco_super_product[0] != "yes"){
-                        $productTotalComision = floatval($epayco_epayco_comition[0])*$product["quantity"];
-                        $receiversa['total'] = floatval($product['total']) ;
-                        $fee = floatval($product['total'])-$productTotalComision;
-                        $receiversa['iva'] = 0;
-                        $receiversa['base_iva'] = 0;
-                        $receiversa['fee'] = $fee;
-                    }else{
-                        $receiversa['total'] =  floatval($product['total']);
-                        $receiversa['iva'] = 0;
-                        $receiversa['base_iva'] = 0;
-                        $receiversa['fee'] = 0;
+                        if ($epayco_super_product[0] != "yes") {
+                            $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
+                            $receiversa['total'] = floatval($product['total']);
+                            $fee = floatval($product['total']) - $productTotalComision;
+                            $receiversa['iva'] = 0;
+                            $receiversa['base_iva'] = 0;
+                            $receiversa['fee'] = $fee;
+                        } else {
+                            $receiversa['total'] = floatval($product['total']);
+                            $receiversa['iva'] = 0;
+                            $receiversa['base_iva'] = 0;
+                            $receiversa['fee'] = 0;
+                        }
+                        if ($epayco_p_cust_id_client[0]) {
+                            array_push($receiversData, $receiversa);
+                        }
+
                     }
-                    $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
-                    $descripcionParts[] = $clearData;
-                    if($epayco_p_cust_id_client[0]) {
-                        array_push($receiversData, $receiversa);
-                    }
+                        $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
+                        $descripcionParts[] = $clearData;
+
+
                 }
                 $receivers = $receiversData;
                 $split = 'false';
@@ -836,7 +841,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
     
                             var openChekout = function () {
-                               handler.open(data)
+                                handler.open(data)
                             }
                             var bntPagar = document.getElementById("btn_epayco_agregador");
                             bntPagar.addEventListener("click", openChekout);
