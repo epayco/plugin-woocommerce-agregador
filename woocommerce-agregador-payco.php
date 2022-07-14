@@ -102,9 +102,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
 
             function order_received_message( $text, $order ) {
-                if(!empty(sanitize_text_field($_GET['msg']))){
-                    return $text .' '.sanitize_text_field($_GET['msg']);
-                }
                 return $text;
             }
 
@@ -841,7 +838,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
     
                             var openChekout = function () {
-                                handler.open(data)
+                               handler.open(data)
                             }
                             var bntPagar = document.getElementById("btn_epayco_agregador");
                             bntPagar.addEventListener("click", openChekout);
@@ -947,12 +944,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $order_id_rpl  = str_replace('?ref_payco','',$order_id_explode);
                 $order_id = $order_id_rpl[0];
                 $order = new WC_Order($order_id);
-                $ref_payco = sanitize_text_field($_GET['ref_payco']);
                 $isConfirmation = sanitize_text_field($_GET['confirmation']) == 1;
-                if(empty($ref_payco)){
-                    $ref_payco =$order_id_rpl[1];
-                }
-                
+
                 if ($isConfirmation){
                     $x_signature = sanitize_text_field($_REQUEST['x_signature']);
                     $x_cod_transaction_state = sanitize_text_field($_REQUEST['x_cod_transaction_state']);
@@ -965,7 +958,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_franchise = trim(sanitize_text_field($_REQUEST['x_franchise']));
                 }
                 else {
-
+                    $ref_payco = sanitize_text_field($_GET['ref_payco']);
+                    if(empty($ref_payco)){
+                        $ref_payco =$order_id_rpl[1];
+                    }
                     if (!$ref_payco) 
                     {
                         $explode=explode('=',$order_id);
