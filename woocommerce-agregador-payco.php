@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.2.0
+ * Version:           6.3.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.2.0';
+                $this->version = '6.3.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -783,7 +783,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             <img src="'.$epaycoButtonImage.'">
                          </a>
                         <form id="appAgregador">
-                            <script src="https://checkout.epayco.co/checkout.js">
+                            <script
+                                src="https://checkout.epayco.co/checkout.js"
+                                >
                             </script>
                             <script>
                             var handler = ePayco.checkout.configure({
@@ -850,6 +852,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     window.location.href = responseUrl
                                 });
                             }
+
+                            let responseUrl = document.getElementById("response").textContent;
+                            handler.onCloseModal = function () {};
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
