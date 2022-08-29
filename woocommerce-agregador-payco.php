@@ -784,7 +784,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                          </a>
                         <form id="appAgregador">
                             <script
-                                src="https://checkout.epayco.co/checkout.js"
+                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js"
                                 >
                             </script>
                             <script>
@@ -971,13 +971,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $ref_payco=$explode[1];
                     }
                     
-                    $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
+                    $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
                     $validationData = $jsonData['data'];
                     $x_signature = trim($validationData['x_signature']);
-                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']);
+                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ? 
+                        (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
                     $x_ref_payco = trim($validationData['x_ref_payco']);
                     $x_transaction_id = trim($validationData['x_transaction_id']);
                     $x_amount = trim($validationData['x_amount']);
@@ -1400,13 +1401,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $current_state == "epayco-failed"
                                 ){}else{
                                     $this->restore_order_stock($order->get_id());
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
+                                    $messageClass = 'error';
                                 }
                             }
                         }
                     }
-                        $order->update_status($orderStatus);
-                        $order->add_order_note($message);
-                        $messageClass = 'error';
+                        
                 }
                 
                  if (isset($_REQUEST['confirmation'])) {
@@ -1454,7 +1456,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 $username = sanitize_text_field($validationData['epayco_publickey']);
                 $password = sanitize_text_field($validationData['epayco_privatey']);
-                $response = wp_remote_post( 'https://apify.epayco.co/login', array(
+                $response = wp_remote_post( 'https://apify.epayco.io/login', array(
                     'headers' => array(
                         'Authorization' => 'Basic ' . base64_encode( $username . ':' . $password ),
                     ),
