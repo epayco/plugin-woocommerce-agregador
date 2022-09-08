@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.2.0
+ * Version:           6.3.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.2.0';
+                $this->version = '6.3.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -784,7 +784,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                          </a>
                         <form id="appAgregador">
                             <script
-                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js?version=1643645084821"
+                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js"
                                 >
                             </script>
                             <script>
@@ -852,6 +852,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     window.location.href = responseUrl
                                 });
                             }
+
+                            let responseUrl = document.getElementById("response").textContent;
+                            handler.onCloseModal = function () {};
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
@@ -967,6 +970,28 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $explode=explode('=',$order_id);
                         $ref_payco=$explode[1];
                     }
+
+                    if(!$ref_payco){
+                        if($this->epayco_agregador_testmode == "yes"){
+                            $order->update_status('epayco_cancelled');
+                            $order->add_order_note('Pago rechazado');
+                            $this->restore_order_stock($order->get_id());
+
+                        }else{
+                            $order->update_status('epayco-cancelled');
+                            $order->add_order_note('Pago rechazado');
+                            $this->restore_order_stock($order->get_id());
+                        }
+                        $woocommerce->cart->empty_cart();
+                        foreach ($order->get_items() as $item) {
+                            // Get an instance of corresponding the WC_Product object
+                            $product_id = $item->get_product()->id;
+                            $qty = $item->get_quantity(); // Get the item quantity
+                            WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                        }
+                        wp_safe_redirect( wc_get_checkout_url() );
+                        exit();
+                    }
                     
                     $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
@@ -974,7 +999,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $jsonData = @json_decode($body, true);
                     $validationData = $jsonData['data'];
                     $x_signature = trim($validationData['x_signature']);
-                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']);
+                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ? 
+                        (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
                     $x_ref_payco = trim($validationData['x_ref_payco']);
                     $x_transaction_id = trim($validationData['x_transaction_id']);
                     $x_amount = trim($validationData['x_amount']);
@@ -1397,13 +1423,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $current_state == "epayco-failed"
                                 ){}else{
                                     $this->restore_order_stock($order->get_id());
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
+                                    $messageClass = 'error';
                                 }
                             }
                         }
                     }
-                        $order->update_status($orderStatus);
-                        $order->add_order_note($message);
-                        $messageClass = 'error';
+                        
                 }
                 
                  if (isset($_REQUEST['confirmation'])) {
