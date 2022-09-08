@@ -102,9 +102,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
 
             function order_received_message( $text, $order ) {
-                if(!empty(sanitize_text_field($_GET['msg']))){
-                    return $text .' '.sanitize_text_field($_GET['msg']);
-                }
                 return $text;
             }
 
@@ -663,29 +660,34 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $descripcionParts = array();
                 $receiversData = [];
                 foreach ($order->get_items() as $product) {
-                    $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
-                    $receiversa['id'] = $epayco_p_cust_id_client[0];
-                    $epayco_super_product = get_post_meta( $product["product_id"], '_super_product_a' );
-                    $epayco_epayco_comition = get_post_meta( $product["product_id"], 'epayco_comition_a' );
+                    $epayco_p_cust_id_client = get_post_meta($product["product_id"], 'p_cust_id_client_a');
+                    if ( count($epayco_p_cust_id_client) ) {
+                        $receiversa['id'] = $epayco_p_cust_id_client[0];
+                        $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
+                        $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
 
-                    if($epayco_super_product[0] != "yes"){
-                        $productTotalComision = floatval($epayco_epayco_comition[0])*$product["quantity"];
-                        $receiversa['total'] = floatval($product['total']) ;
-                        $fee = floatval($product['total'])-$productTotalComision;
-                        $receiversa['iva'] = 0;
-                        $receiversa['base_iva'] = 0;
-                        $receiversa['fee'] = $fee;
-                    }else{
-                        $receiversa['total'] =  floatval($product['total']);
-                        $receiversa['iva'] = 0;
-                        $receiversa['base_iva'] = 0;
-                        $receiversa['fee'] = 0;
+                        if ($epayco_super_product[0] != "yes") {
+                            $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
+                            $receiversa['total'] = floatval($product['total']);
+                            $fee = floatval($product['total']) - $productTotalComision;
+                            $receiversa['iva'] = 0;
+                            $receiversa['base_iva'] = 0;
+                            $receiversa['fee'] = $fee;
+                        } else {
+                            $receiversa['total'] = floatval($product['total']);
+                            $receiversa['iva'] = 0;
+                            $receiversa['base_iva'] = 0;
+                            $receiversa['fee'] = 0;
+                        }
+                        if ($epayco_p_cust_id_client[0]) {
+                            array_push($receiversData, $receiversa);
+                        }
+
                     }
-                    $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
-                    $descripcionParts[] = $clearData;
-                    if($epayco_p_cust_id_client[0]) {
-                        array_push($receiversData, $receiversa);
-                    }
+                        $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
+                        $descripcionParts[] = $clearData;
+
+
                 }
                 $receivers = $receiversData;
                 $split = 'false';
@@ -945,12 +947,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $order_id_rpl  = str_replace('?ref_payco','',$order_id_explode);
                 $order_id = $order_id_rpl[0];
                 $order = new WC_Order($order_id);
-                $ref_payco = sanitize_text_field($_GET['ref_payco']);
                 $isConfirmation = sanitize_text_field($_GET['confirmation']) == 1;
-                if(empty($ref_payco)){
-                    $ref_payco =$order_id_rpl[1];
-                }
-                
+
                 if ($isConfirmation){
                     $x_signature = sanitize_text_field($_REQUEST['x_signature']);
                     $x_cod_transaction_state = sanitize_text_field($_REQUEST['x_cod_transaction_state']);
@@ -963,7 +961,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $x_franchise = trim(sanitize_text_field($_REQUEST['x_franchise']));
                 }
                 else {
-
+                    $ref_payco = sanitize_text_field($_GET['ref_payco']);
+                    if(empty($ref_payco)){
+                        $ref_payco =$order_id_rpl[1];
+                    }
                     if (!$ref_payco) 
                     {
                         $explode=explode('=',$order_id);
@@ -1401,11 +1402,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $this->restore_order_stock($order->get_id());
                                 }
                             }
+                            $order->update_status($orderStatus);
+                            $order->add_order_note($message);
+                            $messageClass = 'error';
                         }
                     }
-                        $order->update_status($orderStatus);
-                        $order->add_order_note($message);
-                        $messageClass = 'error';
+                        
                 }
                 
                  if (isset($_REQUEST['confirmation'])) {

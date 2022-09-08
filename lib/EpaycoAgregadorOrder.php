@@ -78,7 +78,7 @@ class EpaycoAgregadorOrder{
         if (is_null($result))
             return false;
 
-        return intval($results[0]->order_stock_discount) != 0 ? true : false;
+        return intval($result->order_stock_discount) != 0 ? true : false;
 
     }
 
