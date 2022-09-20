@@ -852,6 +852,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     window.location.href = responseUrl
                                 });
                             }
+
+                            let responseUrl = document.getElementById("response").textContent;
+                            handler.onCloseModal = function () {};
                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
