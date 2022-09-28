@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.3.0
+ * Version:           6.5.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.3.0';
+                $this->version = '6.5.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -970,7 +970,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $explode=explode('=',$order_id);
                         $ref_payco=$explode[1];
                     }
-
+                    
                     if(!$ref_payco){
                         if($this->epayco_agregador_testmode == "yes"){
                             $order->update_status('epayco_cancelled');
@@ -991,8 +991,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
                         wp_safe_redirect( wc_get_checkout_url() );
                         exit();
-                    }
-                    
+                    }                    
                     $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
@@ -1098,7 +1097,18 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 //se descuenta el stock
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                             }
-                            if($current_state != $orderStatus){
+                            if($current_state == "epayco_processing" ||
+                                    $current_state == "epayco_completed" ||
+                                    $current_state == "processing_test" ||
+                                    $current_state == "completed_test" ||
+                                    $current_state == "epayco-processing" ||
+                                    $current_state == "epayco-completed" ||
+                                    $current_state == "processing-test" ||
+                                    $current_state == "completed-test"||
+                                    $current_state == "processing" ||
+                                    $current_state == "completed"
+                                ){}
+                                else{
                                 if($isTestMode=="true" && $current_state == "epayco_on_hold"){
                                     if($orderStatus == "processing"){
                                         $this->restore_order_stock($order->get_id(),"decrease");  
@@ -1423,14 +1433,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $current_state == "epayco-failed"
                                 ){}else{
                                     $this->restore_order_stock($order->get_id());
-                                    $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
-                                    $messageClass = 'error';
                                 }
                             }
                         }
                     }
-                        
+                        $order->update_status($orderStatus);
+                        $order->add_order_note($message);
+                        $messageClass = 'error';
                 }
                 
                  if (isset($_REQUEST['confirmation'])) {
