@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.5.0
+ * Version:           6.6.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.5.0';
+                $this->version = '6.6.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -80,6 +80,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->epayco_agregador_lang=$this->get_option('epayco_agregador_lang')?$this->get_option('epayco_agregador_lang'):'es';
                 $this->response_data = $this->get_option('response_data');
                 $this->force_redirect = $this->get_option('force_redirect');
+                $this->clear_cart = $this->get_option('clear_cart');
                 add_filter('woocommerce_thankyou_order_received_text', array(&$this, 'order_received_message'), 10, 2 );
                 add_action('ePayco_Agregador_init', array( $this, 'ePayco_agregador_successful_request'));
                 add_action('ePayco_Agregador_init_validation', array( $this, 'ePayco_Agregador_successful_validation'));
@@ -597,6 +598,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'description' => __('Habilite si desea que el usuario pagador al cancelar la transacción o cerrar el checkout sea redirigido a la URL de respuesta configurada.', 'epayco_agregador_woocommerce'),
                         'default' => 'no',
                     ),
+                    'clear_cart' => array(
+                        'title' => __('Habilitar vaciado de carrito', 'epayco_woocommerce'),
+                        'type' => 'checkbox',
+                        'label' => __('Habilitar vaciado de carrito de compras cuando la transacción no quede en estado aprobado o pendiente', 'epayco_woocommerce'),
+                        'description' => __('Habilite si desea que el carrito de compras quede vacio cuando la transaccion quede en estado no aprobado', 'epayco_woocommerce'),
+                        'default' => 'no',
+                    ),
 
                 );
             }
@@ -941,7 +949,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             function ePayco_agregador_successful_request($validationData)
             {
                 global $woocommerce;
-
+                $clear_cart = !($this->clear_cart == "yes");
                 $order_id_info = sanitize_text_field($_GET['order_id']);
                 $order_id_explode = explode('=',$order_id_info);
                 $order_id_rpl  = str_replace('?ref_payco','',$order_id_explode);
@@ -991,7 +999,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
                         wp_safe_redirect( wc_get_checkout_url() );
                         exit();
-                    }                    
+                    }  
                     $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
@@ -1174,7 +1182,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     }
                                 }
                                 echo "2";
-                                if(!$isConfirmation){
+                                if(!$isConfirmation && $clear_cart){
                                     $woocommerce->cart->empty_cart();
                                     foreach ($order->get_items() as $item) {
                                         // Get an instance of corresponding the WC_Product object
@@ -1251,7 +1259,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     }
                                 }
                                 echo "4";
-                                if(!$isConfirmation){
+                                if(!$isConfirmation && $clear_cart){
                                     $woocommerce->cart->empty_cart();
                                     foreach ($order->get_items() as $item) {
                                         // Get an instance of corresponding the WC_Product object
@@ -1308,7 +1316,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     }
                                 }
                                 echo "10";
-                                if(!$isConfirmation){
+                                if(!$isConfirmation && $clear_cart){
                                     $woocommerce->cart->empty_cart();
                                     foreach ($order->get_items() as $item) {
                                         // Get an instance of corresponding the WC_Product object
@@ -1361,7 +1369,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     }
                                 }
                                 echo "11";
-                                if(!$isConfirmation){
+                                if(!$isConfirmation && $clear_cart){
                                     $woocommerce->cart->empty_cart();
                                     foreach ($order->get_items() as $item) {
                                         // Get an instance of corresponding the WC_Product object
