@@ -751,7 +751,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                     $descripcionParts[] = $clearData;
 
-                    
+
                 }
                 $receivers = $receiversData;
                 $split = 'false';
@@ -779,7 +779,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 foreach ($receivers as  $receiver) {
                     array_push($receiversInfo, $receiver);
                 }
-
+                if(count($receiversInfo) > 0){
+                    foreach ($receiversInfo as  $receiver) {
+                        if($receiver["id"] == $this->epayco_agregador_customerid){
+                            $split = 'false';
+                        }else{
+                            $split = 'true';
+                        }
+                    }
+                }
+                
                 $descripcion = implode(' - ', $descripcionParts);
                 $currency = strtolower(get_woocommerce_currency());
                 $testMode = $this->epayco_agregador_testmode == "yes" ? "true" : "false";
@@ -919,7 +928,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                             let responseUrl = document.getElementById("response").textContent;
                             handler.onCloseModal = function () {};
-                             setTimeout(openChekout, 2000)  
+                            setTimeout(openChekout, 2000)  
                         </script>
                         </form>
                         </center>
