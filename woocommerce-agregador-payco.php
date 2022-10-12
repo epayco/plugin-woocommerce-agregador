@@ -674,8 +674,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         if($epayco_tipe_split == '01'){
                             if($epayco_p_cust_id_client[0] != ""){
                                 $receiversa['id'] = $epayco_p_cust_id_client[0];
-                                $epayco_super_product = get_post_meta($product["product_id"], '_super_product');
-                                $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition');
+                                $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
+                                $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
                                 if ($epayco_super_product[0] != "yes") {
                                     $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
                                     $receiversa['total'] = floatval($product['total']);
@@ -733,7 +733,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
 
                     }else{
-                        if(count($receiversData)){
+                        $is_split = false;
+                        foreach ($order->get_items() as $productInf) {
+                            if ( count(get_post_meta( $productInf["product_id"], 'p_cust_id_client_a' )) ) {
+                                $is_split = true;
+                            }
+                        }
+                        if($is_split){
                             $receiversa['id'] = $this->epayco_agregador_customerid;
                             $receiversa['total'] = floatval($product['total']);
                             $receiversa['iva'] = 0;
@@ -745,7 +751,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                     $descripcionParts[] = $clearData;
 
-
+                    
                 }
                 $receivers = $receiversData;
                 $split = 'false';
@@ -913,7 +919,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                             let responseUrl = document.getElementById("response").textContent;
                             handler.onCloseModal = function () {};
-                           setTimeout(openChekout, 2000)  
+                             setTimeout(openChekout, 2000)  
                         </script>
                         </form>
                         </center>
