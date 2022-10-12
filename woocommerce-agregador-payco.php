@@ -693,7 +693,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     array_push($receiversData, $receiversa);
                                 }
                             }else{
-                                $receiversa['id'] = $this->epayco_customerid;
+                                $receiversa['id'] = $this->epayco_agregador_customerid;
                                 $receiversa['total'] = floatval($product['total']);
                                 $receiversa['iva'] = 0;
                                 $receiversa['base_iva'] = 0;
@@ -723,7 +723,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     array_push($receiversData, $receiversa);
                                 }
                             }else{
-                                $receiversa['id'] = $this->epayco_customerid;
+                                $receiversa['id'] = $this->epayco_agregador_customerid;
                                 $receiversa['total'] = floatval($product['total']);
                                 $receiversa['iva'] = 0;
                                 $receiversa['base_iva'] = 0;
@@ -732,6 +732,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
                         }
 
+                    }else{
+                        if(count($receiversData)){
+                            $receiversa['id'] = $this->epayco_agregador_customerid;
+                            $receiversa['total'] = floatval($product['total']);
+                            $receiversa['iva'] = 0;
+                            $receiversa['base_iva'] = 0;
+                            $receiversa['fee'] = 0;
+                            array_push($receiversData, $receiversa);
+                        }
                     }
                     $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                     $descripcionParts[] = $clearData;
@@ -904,7 +913,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                             let responseUrl = document.getElementById("response").textContent;
                             handler.onCloseModal = function () {};
-                            setTimeout(openChekout, 2000)  
+                           setTimeout(openChekout, 2000)  
                         </script>
                         </form>
                         </center>
