@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.4.0
+ * Version:           6.5.0
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.4.0';
+                $this->version = '6.5.0';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -971,13 +971,35 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $ref_payco=$explode[1];
                     }
                     
+                    if(!$ref_payco){
+                        if($this->epayco_agregador_testmode == "yes"){
+                            $order->update_status('epayco_cancelled');
+                            $order->add_order_note('Pago rechazado');
+                            $this->restore_order_stock($order->get_id());
+
+                        }else{
+                            $order->update_status('epayco-cancelled');
+                            $order->add_order_note('Pago rechazado');
+                            $this->restore_order_stock($order->get_id());
+                        }
+                        $woocommerce->cart->empty_cart();
+                        foreach ($order->get_items() as $item) {
+                            // Get an instance of corresponding the WC_Product object
+                            $product_id = $item->get_product()->id;
+                            $qty = $item->get_quantity(); // Get the item quantity
+                            WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                        }
+                        wp_safe_redirect( wc_get_checkout_url() );
+                        exit();
+                    }                    
                     $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
                     $validationData = $jsonData['data'];
                     $x_signature = trim($validationData['x_signature']);
-                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']);
+                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ? 
+                        (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
                     $x_ref_payco = trim($validationData['x_ref_payco']);
                     $x_transaction_id = trim($validationData['x_transaction_id']);
                     $x_amount = trim($validationData['x_amount']);
@@ -1075,7 +1097,18 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 //se descuenta el stock
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                             }
-                            if($current_state != $orderStatus){
+                            if($current_state == "epayco_processing" ||
+                                    $current_state == "epayco_completed" ||
+                                    $current_state == "processing_test" ||
+                                    $current_state == "completed_test" ||
+                                    $current_state == "epayco-processing" ||
+                                    $current_state == "epayco-completed" ||
+                                    $current_state == "processing-test" ||
+                                    $current_state == "completed-test"||
+                                    $current_state == "processing" ||
+                                    $current_state == "completed"
+                                ){}
+                                else{
                                 if($isTestMode=="true" && $current_state == "epayco_on_hold"){
                                     if($orderStatus == "processing"){
                                         $this->restore_order_stock($order->get_id(),"decrease");  
