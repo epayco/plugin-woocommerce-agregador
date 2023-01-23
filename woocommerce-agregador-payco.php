@@ -1736,14 +1736,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         */
             public static function alg_custom_order_numbers_setting_script() {
                 $plugin_url       = plugins_url() . '/plugin_woocommerce_agregador';
-                $numbers_instance = alg_wc_custom_order_numbers();
-                wp_enqueue_script(
-                    'con_dismiss_notice',
-                    $plugin_url . '/includes/js/con-dismiss-notice.js',
-                    '',
-                    $numbers_instance->version,
-                    false
-                );
                 wp_localize_script(
                     'con_dismiss_notice',
                     'con_dismiss_param',
