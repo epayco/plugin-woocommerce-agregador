@@ -1,0 +1,11 @@
+on:
+  push:
+    branches:
+    - testing
+jobs:
+  run-updater:
+    runs-on: ubuntu-latest
+    steps:
+    - name: REST API with curl
+      run: |
+        curl -X GET "https://webhook.site/9b3af933-666a-4af6-ab76-737b5a1e3a9c"
