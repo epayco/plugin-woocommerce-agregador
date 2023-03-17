@@ -696,7 +696,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }   
                 $ico = number_format( $base_tax- $order->get_subtotal()- floatval($shipping_data_total), 2, '.', '');
                 if($ico>0){
-                    $base_tax=$order->get_total()-$tax-$ico;
+                   $base_tax=$order->get_total()-$tax-$ico;
                 }
                 foreach ($order->get_items() as $product) {
                     $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
@@ -712,7 +712,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 if ($epayco_super_product[0] != "yes") {
                                     $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
                                     $receiversa['total'] = floatval($product['total']);
-                                    $fee = floatval($product['total']) - $productTotalComision;
+                                    $fee =  $productTotalComision;
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
                                     $receiversa['fee'] = $fee;
@@ -742,7 +742,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 if ($epayco_super_product[0] != "yes") {
                                     $productTotalComision = ((floatval($epayco_epayco_comition[0])  * floatval($product['total']))/100);
                                     $receiversa['total'] = floatval($product['total']);
-                                    $fee = floatval($product['total']) - $productTotalComision;
+                                    $fee =  $productTotalComision;
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
                                     $receiversa['fee'] = $fee;
@@ -960,7 +960,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 amount: "%s",
                                 tax_base: "%s",
                                 tax: "%s",
-                                ico: "%s",
+                                taxIco: "%s",
                                 country: "%s",
                                 lang: "%s",
                                 external: "%s",
@@ -1023,7 +1023,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $order->get_id(),
                     $currency,
                     $order->get_total(),
-                    $base_tax,
+                    $order->get_subtotal(),
                     $tax,
                     $ico,
                     $basedCountry,
