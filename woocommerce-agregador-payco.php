@@ -82,6 +82,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->response_data = $this->get_option('response_data');
                 $this->force_redirect = $this->get_option('force_redirect');
                 $this->clear_cart = $this->get_option('clear_cart');
+                $this->split_payment = $this->get_option('split_payment');
+                $this->split_payment_type = $this->get_option('split_payment_type');
                 add_filter('woocommerce_thankyou_order_received_text', array(&$this, 'order_received_message'), 10, 2 );
                 add_action('ePayco_Agregador_init', array( $this, 'ePayco_agregador_successful_request'));
                 add_action('ePayco_Agregador_init_validation', array( $this, 'ePayco_Agregador_successful_validation'));
@@ -93,7 +95,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
                 add_action('wp_ajax_nopriv_returndata',array($this,'datareturnepaycoagregador_ajax'));
                 add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-               
+
                 if ($this->epayco_agregador_testmode == "yes") {
                     if (class_exists('WC_Logger')) {
                         $this->log = new WC_Logger();
@@ -434,7 +436,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                                       
                                                   </form>  
                                                 <br><br>'.
-                                    $path  = '';
+                                        $path  = '';
                                     $url_icon = plugin_dir_url(__FILE__)."lib";
                                     $dir_ = __DIR__."/lib";
                                     if(is_dir($dir_)) {
@@ -610,13 +612,27 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'description' => __('Habilite si desea que el usuario pagador al cancelar la transacción o cerrar el checkout sea redirigido a la URL de respuesta configurada.', 'epayco_agregador_woocommerce'),
                         'default' => 'no',
                     ),
-                     'clear_cart' => array(
+                    'clear_cart' => array(
                         'title' => __('Habilitar vaciado de carrito', 'epayco_agregador_woocommerce'),
                         'type' => 'checkbox',
                         'label' => __('Habilitar vaciado de carrito de compras cuando la transacción no quede en estado aprobado o pendiente', 'epayco_woocommerce'),
                         'description' => __('Habilite si desea que el carrito de compras quede vacio cuando la transaccion quede en estado no aprobado', 'epayco_woocommerce'),
                         'default' => 'no',
-                    )
+                    ),
+                    'split_payment' => array(
+                        'title' => __('Habilitar splitpayment', 'epayco_agregador_woocommerce'),
+                        'type' => 'checkbox',
+                        'label' => __('Habilitar splitpayment', 'epayco_woocommerce'),
+                        'description' => __('Habilitar splitpayment', 'epayco_woocommerce'),
+                        'default' => 'no',
+                    ),
+                    'split_payment_type' => array(
+                        'title' => __('Tipo de splitpayment', 'epayco_agregador_woocommerce'),
+                        'type' => 'select',
+                        'css' =>'line-height: inherit',
+                        'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
+                        'options' => array('01' => 'fija','02' => 'porcentaje'),
+                    ),
                 );
             }
 
@@ -693,17 +709,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $shipping_data_total = $item_data['total'];
                     $shipping_data_taxes        = $item_data['taxes'];
 
-                }   
+                }
                 $ico = number_format( $base_tax- $order->get_subtotal()- floatval($shipping_data_total), 2, '.', '');
                 if($ico>0){
-                   $base_tax=$order->get_total()-$tax-$ico;
+                    $base_tax=$order->get_total()-$tax-$ico;
                 }
+                $isSplit = $this->split_payment == "yes";
                 foreach ($order->get_items() as $product) {
                     $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
-                    if ( !empty($epayco_p_cust_id_client[0]) ) {
+                    if ( !empty($epayco_p_cust_id_client[0]) && $isSplit ) {
                         $isProductoWhitSplit = true;
                         $totalSplitAmount=$totalSplitAmount+floatval($product['total']);
-                        $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
+                       // $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
+                        $epayco_tipe_split= $this->split_payment_type;
                         if($epayco_tipe_split == '01'){
                             if($epayco_p_cust_id_client[0] != ""){
                                 $receiversa['id'] = $epayco_p_cust_id_client[0];
@@ -783,7 +801,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
                 $isSplitProducto = false;
                 $receiversWithProduct= [];
-                
+
                 if(floatval($totalSplitAmount) != floatval($base_tax)){
                     foreach ($receiversData as  $receiverinfo) {
                         if($receiverinfo["id"] == $this->epayco_agregador_customerid){
@@ -796,19 +814,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $receiverBase = 0;
                     $receiver = [];
                     foreach ($receiversData as  $k => $dato) {
-                            if($dato["id"] == $this->epayco_agregador_customerid){
-                                $receiverTotal+=$dato["total"];
-                                $receiverTax+=$dato["iva"];
-                                $receiverBase+=$dato["base_iva"];
-                                $receiver['id'] = $this->epayco_agregador_customerid;
-                                $receiver['total'] = $receiverTotal;
-                                $receiver['iva'] = $receiverTax;
-                                $receiver['base_iva'] = $receiverBase;
-                                $receiver['fee'] = 0;
-                            }
+                        if($dato["id"] == $this->epayco_agregador_customerid){
+                            $receiverTotal+=$dato["total"];
+                            $receiverTax+=$dato["iva"];
+                            $receiverBase+=$dato["base_iva"];
+                            $receiver['id'] = $this->epayco_agregador_customerid;
+                            $receiver['total'] = $receiverTotal;
+                            $receiver['iva'] = $receiverTax;
+                            $receiver['base_iva'] = $receiverBase;
+                            $receiver['fee'] = 0;
+                        }
                     }
                     array_push($receivers, $receiver);
-                    
+
                     if($isSplitProducto){
                         foreach ($receiversData as  $k => $dato) {
                             if($dato["id"] != $this->epayco_agregador_customerid){
@@ -820,7 +838,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 array_push($receiversWithProduct, $receiver);
                             }
                         }
-    
+
                         $receiversData = [];
                         $receiver_= [];
                         foreach ($receivers as  $k => $dato) {
@@ -841,7 +859,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $receiversa['fee'] = 0;
                         array_push($receiversData, $receiversa);
                     }
-                    
+
                 }
 
                 if($isProductoWhitSplit){
@@ -849,10 +867,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }else{
                     $receivers = $receiversData;
                 }
-                
+
                 $split = 'false';
                 $receiversInfo = [];
-         
+
                 if(count($receivers) < 2){
                     $custId = isset($receivers[0]['id']) ? $receivers[0]['id'] : null;
                     if($custId){
@@ -884,7 +902,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
                     }
                 }
-                
+
                 $descripcion = implode(' - ', $descripcionParts);
                 $currency = strtolower(get_woocommerce_currency());
                 $testMode = $this->epayco_agregador_testmode == "yes" ? "true" : "false";
@@ -894,16 +912,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $confirm_url=get_site_url() . "/";
                 $redirect_url = add_query_arg( 'wc-api', get_class( $this ), $redirect_url );
                 $redirect_url = add_query_arg( 'order_id', $order_id, $redirect_url );
-                
+
                 if ($this->get_option('epayco_agregador_url_confirmation' ) == 0) {
-                        $confirm_url = add_query_arg( 'wc-api', get_class( $this ), $confirm_url );
-                        $confirm_url = add_query_arg( 'order_id', $order_id, $confirm_url );
-                        $confirm_url = $redirect_url.'&confirmation=1';
-                    } else {
-                        
-                        $confirm_url = get_permalink($this->get_option('epayco_agregador_url_confirmation'));
+                    $confirm_url = add_query_arg( 'wc-api', get_class( $this ), $confirm_url );
+                    $confirm_url = add_query_arg( 'order_id', $order_id, $confirm_url );
+                    $confirm_url = $redirect_url.'&confirmation=1';
+                } else {
+
+                    $confirm_url = get_permalink($this->get_option('epayco_agregador_url_confirmation'));
                 }
-                
+
                 $name_billing=$order->get_billing_first_name().' '.$order->get_billing_last_name();
                 $address_billing=$order->get_billing_address_1();
                 $phone_billing=@$order->billing_phone;
@@ -1123,12 +1141,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     if(empty($ref_payco)){
                         $ref_payco =$order_id_rpl[1];
                     }
-                    if (!$ref_payco) 
+                    if (!$ref_payco)
                     {
                         $explode=explode('=',$order_id);
                         $ref_payco=$explode[1];
                     }
-                    
+
                     if(!$ref_payco){
                         if($this->epayco_agregador_testmode == "yes"){
                             $order->update_status('epayco_cancelled');
@@ -1151,22 +1169,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             wp_safe_redirect( wc_get_checkout_url() );
                             exit();
                         }else{
-                             if ($this->get_option('epayco_agregador_url_response' ) == 0) {
+                            if ($this->get_option('epayco_agregador_url_response' ) == 0) {
                                 $redirect_url = $order->get_checkout_order_received_url();
                             } else {
-                             
+
                                 $redirect_url = get_permalink($this->get_option('epayco_agregador_url_response'));
                             }
                         }
-                    }  
-                                      
+                    }
+
                     $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
                     $response = wp_remote_get(  $url );
                     $body = wp_remote_retrieve_body( $response );
                     $jsonData = @json_decode($body, true);
                     $validationData = $jsonData['data'];
                     $x_signature = trim($validationData['x_signature']);
-                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ? 
+                    $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ?
                         (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
                     $x_ref_payco = trim($validationData['x_ref_payco']);
                     $x_transaction_id = trim($validationData['x_transaction_id']);
@@ -1181,7 +1199,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 if ($order_id != "" && $x_ref_payco != "") {
                     $authSignature = $this->authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code);
                 }
-              
+
                 $message = '';
                 $messageClass = '';
                 $current_state = $order->get_status();
@@ -1204,14 +1222,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $validation = false;
                             }
                         }
-                        
+
                     }
                 }else{
-                     $validation = false;
+                    $validation = false;
                 }
 
                 if($authSignature == $x_signature && $validation){
-                   
+
                     switch ($x_cod_transaction_state) {
                         case 1: {
                             if($isTestMode=="true"){
@@ -1235,37 +1253,37 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $orderStatus = $this->epayco_agregador_endorder_state;
                             }
 
-                        if($current_state == "epayco_failed" ||
-                            $current_state == "epayco_cancelled" ||
-                            $current_state == "failed" ||
-                            $current_state == "epayco-cancelled" ||
-                            $current_state == "epayco-failed"
-                        ){
-                            if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
-                                //se descuenta el stock
-                                EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
-                               if($current_state != $orderStatus){
-                                    if($isTestMode=="true"){
-                                                 $this->restore_order_stock($order->get_id(),"decrease");
-                                         }else{
-                                             if($orderStatus == "epayco-processing" || $orderStatus == "epayco-completed"){
-                                                 $this->restore_order_stock($order->get_id(),"decrease");
+                            if($current_state == "epayco_failed" ||
+                                $current_state == "epayco_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                            ){
+                                if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
+                                    //se descuenta el stock
+                                    EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
+                                    if($current_state != $orderStatus){
+                                        if($isTestMode=="true"){
+                                            $this->restore_order_stock($order->get_id(),"decrease");
+                                        }else{
+                                            if($orderStatus == "epayco-processing" || $orderStatus == "epayco-completed"){
+                                                $this->restore_order_stock($order->get_id(),"decrease");
                                             }
                                         }
-                                    
-                                    $order->payment_complete($x_ref_payco);
-                                    $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
+
+                                        $order->payment_complete($x_ref_payco);
+                                        $order->update_status($orderStatus);
+                                        $order->add_order_note($message);
+                                    }
                                 }
-                            }
-                            
-                        }else{
-                             //Busca si ya se descontó el stock
-                            if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
-                                //se descuenta el stock
-                                EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
-                            }
-                            if($current_state == "epayco_processing" ||
+
+                            }else{
+                                //Busca si ya se descontó el stock
+                                if (!EpaycoAgregadorOrder::ifStockDiscount($order_id)){
+                                    //se descuenta el stock
+                                    EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
+                                }
+                                if($current_state == "epayco_processing" ||
                                     $current_state == "epayco_completed" ||
                                     $current_state == "processing_test" ||
                                     $current_state == "completed_test" ||
@@ -1277,93 +1295,93 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $current_state == "completed"
                                 ){}
                                 else{
-                                if($isTestMode=="true" && $current_state == "epayco_on_hold"){
-                                    if($orderStatus == "processing"){
-                                        $this->restore_order_stock($order->get_id(),"decrease");  
-                                    }
-                                    if($orderStatus == "completed"){
-                                        $this->restore_order_stock($order->get_id(),"decrease");  
-                                    }
-                                }
-                                if($isTestMode != "true" && $current_state == "epayco-on-hold"){
-                                    if($orderStatus == "processing"){
-                                        $this->restore_order_stock($order->get_id());  
-                                    }
-                                    if($orderStatus == "completed"){
-                                        $this->restore_order_stock($order->get_id());  
-                                    }
-                                }
-                                if($current_state =="pending")
-                                {
-                                     $this->restore_order_stock($order->get_id());
-                                }
-                                    $order->payment_complete($x_ref_payco);
-                                    $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
-                            }
-                        }
-                        echo "1";  
-                        } break;
-                        case 2: {
-                            
-                            if($isTestMode=="true"){
-                                    if(
-                                        $current_state == "epayco_processing" ||
-                                        $current_state == "epayco_completed" ||
-                                        $current_state == "processing_test" ||
-                                        $current_state == "completed_test"
-                                    ){}else{
-                                        switch ($this->epayco_agregador_endorder_cancelled_state ){
-                                            case 'epayco-cancelled':{
-                                                $orderStatus ='epayco_cancelled';
-                                            }break;
-                                            case 'cancelled':{
-                                                $orderStatus ='cancelled';
-                                            }break;
-                                            case 'failed':{
-                                                $orderStatus ='failed';
-                                            }break;
+                                    if($isTestMode=="true" && $current_state == "epayco_on_hold"){
+                                        if($orderStatus == "processing"){
+                                            $this->restore_order_stock($order->get_id(),"decrease");
                                         }
-                                        $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
-                                        $messageClass = 'woocommerce-error';
-                                        $order->update_status($orderStatus);
-                                        $order->add_order_note($message);
-                                        if($current_state =="epayco-cancelled"||
-                                        $current_state == $orderStatus ){
-                                           }else{
-                                             $this->restore_order_stock($order->get_id());
+                                        if($orderStatus == "completed"){
+                                            $this->restore_order_stock($order->get_id(),"decrease");
                                         }
                                     }
-                                }else{
-                                    if(
-                                        $current_state == "epayco-processing" ||
-                                        $current_state == "epayco-completed" ||
-                                        $current_state == "processing-test" ||
-                                        $current_state == "completed-test"||
-                                        $current_state == "processing" ||
-                                        $current_state == "completed"
-                                    ){}else{
-                                        $message = 'Pago rechazado: ' .$x_ref_payco;
-                                        $messageClass = 'woocommerce-error';
-                                        $order->update_status($this->epayco_agregador_endorder_cancelled_state);
-                                        $order->add_order_note($message);
-                                        if($current_state !=$this->epayco_agregador_endorder_cancelled_state){
+                                    if($isTestMode != "true" && $current_state == "epayco-on-hold"){
+                                        if($orderStatus == "processing"){
+                                            $this->restore_order_stock($order->get_id());
+                                        }
+                                        if($orderStatus == "completed"){
                                             $this->restore_order_stock($order->get_id());
                                         }
                                     }
-                                }
-                                echo "2";
-                                if(!$isConfirmation && $clear_cart){
-                                    $woocommerce->cart->empty_cart();
-                                    foreach ($order->get_items() as $item) {
-                                        // Get an instance of corresponding the WC_Product object
-                                        $product_id = $item->get_product()->id;
-                                        $qty = $item->get_quantity(); // Get the item quantity
-                                        WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                                    if($current_state =="pending")
+                                    {
+                                        $this->restore_order_stock($order->get_id());
                                     }
-                                    wp_safe_redirect( wc_get_checkout_url() );
-                                    exit();
+                                    $order->payment_complete($x_ref_payco);
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
                                 }
+                            }
+                            echo "1";
+                        } break;
+                        case 2: {
+
+                            if($isTestMode=="true"){
+                                if(
+                                    $current_state == "epayco_processing" ||
+                                    $current_state == "epayco_completed" ||
+                                    $current_state == "processing_test" ||
+                                    $current_state == "completed_test"
+                                ){}else{
+                                    switch ($this->epayco_agregador_endorder_cancelled_state ){
+                                        case 'epayco-cancelled':{
+                                            $orderStatus ='epayco_cancelled';
+                                        }break;
+                                        case 'cancelled':{
+                                            $orderStatus ='cancelled';
+                                        }break;
+                                        case 'failed':{
+                                            $orderStatus ='failed';
+                                        }break;
+                                    }
+                                    $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
+                                    $messageClass = 'woocommerce-error';
+                                    $order->update_status($orderStatus);
+                                    $order->add_order_note($message);
+                                    if($current_state =="epayco-cancelled"||
+                                        $current_state == $orderStatus ){
+                                    }else{
+                                        $this->restore_order_stock($order->get_id());
+                                    }
+                                }
+                            }else{
+                                if(
+                                    $current_state == "epayco-processing" ||
+                                    $current_state == "epayco-completed" ||
+                                    $current_state == "processing-test" ||
+                                    $current_state == "completed-test"||
+                                    $current_state == "processing" ||
+                                    $current_state == "completed"
+                                ){}else{
+                                    $message = 'Pago rechazado: ' .$x_ref_payco;
+                                    $messageClass = 'woocommerce-error';
+                                    $order->update_status($this->epayco_agregador_endorder_cancelled_state);
+                                    $order->add_order_note($message);
+                                    if($current_state !=$this->epayco_agregador_endorder_cancelled_state){
+                                        $this->restore_order_stock($order->get_id());
+                                    }
+                                }
+                            }
+                            echo "2";
+                            if(!$isConfirmation && $clear_cart){
+                                $woocommerce->cart->empty_cart();
+                                foreach ($order->get_items() as $item) {
+                                    // Get an instance of corresponding the WC_Product object
+                                    $product_id = $item->get_product()->id;
+                                    $qty = $item->get_quantity(); // Get the item quantity
+                                    WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                                }
+                                wp_safe_redirect( wc_get_checkout_url() );
+                                exit();
+                            }
                         } break;
                         case 3: {
                             //Busca si ya se restauro el stock y si se configuro reducir el stock en transacciones pendientes
@@ -1373,25 +1391,25 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             }
 
                             if($isTestMode=="true"){
-                                    $message = 'Pago pendiente de aprobación Prueba';
-                                    $orderStatus = "epayco_on_hold";
-                                }else{
-                                    $message = 'Pago pendiente de aprobación';
-                                    $orderStatus = "epayco-on-hold";
+                                $message = 'Pago pendiente de aprobación Prueba';
+                                $orderStatus = "epayco_on_hold";
+                            }else{
+                                $message = 'Pago pendiente de aprobación';
+                                $orderStatus = "epayco-on-hold";
+                            }
+                            if($x_franchise != "PSE"){
+                                $order->update_status($orderStatus);
+                                $order->add_order_note($message);
+                                if($current_state == "epayco_failed" ||
+                                    $current_state == "epayco_cancelled" ||
+                                    $current_state == "failed" ||
+                                    $current_state == "epayco-cancelled" ||
+                                    $current_state == "epayco-failed"
+                                ){
+                                    $this->restore_order_stock($order->get_id(),"decrease");
                                 }
-                                if($x_franchise != "PSE"){
-                                    $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
-                                    if($current_state == "epayco_failed" ||
-                                        $current_state == "epayco_cancelled" ||
-                                        $current_state == "failed" ||
-                                        $current_state == "epayco-cancelled" ||
-                                        $current_state == "epayco-failed"
-                                    ){
-                                        $this->restore_order_stock($order->get_id(),"decrease");  
-                                    }
-                                }
-                                echo "3";
+                            }
+                            echo "3";
                         } break;
                         case 4: {
                             if($isTestMode=="true"){
@@ -1417,9 +1435,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $order->update_status($orderStatus);
                                     $order->add_order_note($message);
                                     if($current_state =="epayco-cancelled"||
-                                    $current_state == $orderStatus ){
-                                       }else{
-                                         $this->restore_order_stock($order->get_id());
+                                        $current_state == $orderStatus ){
+                                    }else{
+                                        $this->restore_order_stock($order->get_id());
                                     }
                                 }
                             }else{
@@ -1455,11 +1473,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         } break;
                         case 6: {
                             $message = 'Pago Reversada' .$x_ref_payco;
-                                $messageClass = 'woocommerce-error';
-                                $order->update_status('refunded');
-                                $order->add_order_note('Pago Reversado');
-                                $this->restore_order_stock($order->get_id());
-                                echo "6";
+                            $messageClass = 'woocommerce-error';
+                            $order->update_status('refunded');
+                            $order->add_order_note('Pago Reversado');
+                            $this->restore_order_stock($order->get_id());
+                            echo "6";
                         } break;
                         case 10:{
                             if($isTestMode=="true"){
@@ -1485,9 +1503,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $order->update_status($orderStatus);
                                     $order->add_order_note($message);
                                     if($current_state =="epayco-cancelled"||
-                                    $current_state == $orderStatus ){
-                                       }else{
-                                         $this->restore_order_stock($order->get_id());
+                                        $current_state == $orderStatus ){
+                                    }else{
+                                        $this->restore_order_stock($order->get_id());
                                     }
                                 }
                             }else{
@@ -1545,9 +1563,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $order->update_status($orderStatus);
                                     $order->add_order_note($message);
                                     if($current_state =="epayco-cancelled"||
-                                    $current_state == $orderStatus ){
-                                       }else{
-                                         $this->restore_order_stock($order->get_id());
+                                        $current_state == $orderStatus ){
+                                    }else{
+                                        $this->restore_order_stock($order->get_id());
                                     }
                                 }
                             }else{
@@ -1583,19 +1601,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         } break;
                         default: {
                             if(
-                                    $current_state == "epayco-processing" || 
-                                    $current_state == "epayco-completed" || 
-                                    $current_state == "processing" || 
-                                    $current_state == "completed"){
+                                $current_state == "epayco-processing" ||
+                                $current_state == "epayco-completed" ||
+                                $current_state == "processing" ||
+                                $current_state == "completed"){
 
-                                    }else{
-                                    $message = 'Pago '.$_REQUEST['x_transaction_state'] . $x_ref_payco;
-                                    $messageClass = 'woocommerce-error';
-                                    $order->update_status('epayco-failed');
-                                    $order->add_order_note('Pago fallido o abandonado');
-                                    $this->restore_order_stock($order->get_id());
-                                    }
-                                    echo "default";
+                            }else{
+                                $message = 'Pago '.$_REQUEST['x_transaction_state'] . $x_ref_payco;
+                                $messageClass = 'woocommerce-error';
+                                $order->update_status('epayco-failed');
+                                $order->add_order_note('Pago fallido o abandonado');
+                                $this->restore_order_stock($order->get_id());
+                            }
+                            echo "default";
                         } break;
                     }
 
@@ -1616,14 +1634,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 case 'epayco-completed':{
                                     $orderStatus ='epayco_completed';
                                 }break;
-                                    case 'processing':{
+                                case 'processing':{
                                     $orderStatus ='processing_test';
                                 }break;
-                                    case 'completed':{
+                                case 'completed':{
                                     $orderStatus ='completed_test';
                                 }break;
                             }
-                        } 
+                        }
                     }else{
                         if(
                             $current_state == "epayco-processing" ||
@@ -1635,38 +1653,38 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             $orderStatus = 'epayco-failed';
                             if ($x_cod_transaction_state != 1) {
                                 if($current_state == "epayco_failed" ||
-                                $current_state == "epayco_cancelled" ||
-                                $current_state == "failed" ||
-                                $current_state == "epayco-cancelled" ||
-                                $current_state == "epayco-failed"
+                                    $current_state == "epayco_cancelled" ||
+                                    $current_state == "failed" ||
+                                    $current_state == "epayco-cancelled" ||
+                                    $current_state == "epayco-failed"
                                 ){}else{
                                     $this->restore_order_stock($order->get_id());
                                 }
                             }
                         }
                     }
-                        $order->update_status($orderStatus);
-                        $order->add_order_note($message);
-                        $messageClass = 'error';
+                    $order->update_status($orderStatus);
+                    $order->add_order_note($message);
+                    $messageClass = 'error';
                 }
-                
-                 if (isset($_REQUEST['confirmation'])) {
-                        $redirect_url = get_permalink($this->get_option('epayco_agregador_url_confirmation'));
-                        if ($this->get_option('epayco_agregador_url_confirmation' ) == 0) {
-                            echo $current_state;
-                            die();
-                        }
-                    }else{
-                        
-                        if ($this->get_option('epayco_agregador_url_response' ) == 0) {
-                            $redirect_url = $order->get_checkout_order_received_url();
-                        } else {
-                            $woocommerce->cart->empty_cart();
-                            $redirect_url = get_permalink($this->get_option('epayco_agregador_url_response'));
-                        }
-                    }
 
-               
+                if (isset($_REQUEST['confirmation'])) {
+                    $redirect_url = get_permalink($this->get_option('epayco_agregador_url_confirmation'));
+                    if ($this->get_option('epayco_agregador_url_confirmation' ) == 0) {
+                        echo $current_state;
+                        die();
+                    }
+                }else{
+
+                    if ($this->get_option('epayco_agregador_url_response' ) == 0) {
+                        $redirect_url = $order->get_checkout_order_received_url();
+                    } else {
+                        $woocommerce->cart->empty_cart();
+                        $redirect_url = get_permalink($this->get_option('epayco_agregador_url_response'));
+                    }
+                }
+
+
 
                 $arguments=array();
 
@@ -1770,7 +1788,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 if (!get_option('woocommerce_manage_stock') == 'yes' && !sizeof($order->get_items()) > 0) {
                     return;
                 }
-                
+
                 foreach ($order->get_items() as $item) {
                     // Get an instance of corresponding the WC_Product object
                     $product = $item->get_product();
@@ -1842,14 +1860,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     function epayco_agregador_update_db_check()
     {
-            EpaycoAgregadorOrder::setup();
+        EpaycoAgregadorOrder::setup();
     }
 
 
     add_action('plugins_loaded', 'epayco_agregador_update_db_check');
 
     function register_epayco_agregador_order_status() {
-                register_post_status( 'wc-epayco-failed', array(
+        register_post_status( 'wc-epayco-failed', array(
             'label'                     => 'ePayco Pago Fallido',
             'public'                    => true,
             'show_in_admin_status_list' => true,
@@ -2068,7 +2086,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         }
         ?>
 
-<style>
+        <style>
             .order-status.status-<?php esc_html_e( $order_status_failed, 'text_domain' ); ?> {
                 background: #eba3a3;
                 color: #761919;
@@ -2097,7 +2115,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 background: #eba3a3;
                 color: #761919;
             }
-            </style>
+        </style>
 
         <?php
     }
@@ -2161,7 +2179,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             'wrapper_class' => 'epayco_comition_a',
         ) );
 
-        woocommerce_wp_select(array(
+        /*woocommerce_wp_select(array(
             'id' => 'epayco_ext_a',
             'value' => get_post_meta(get_the_ID(), 'epayco_ext_a', true),
             'wrapper_class' => 'epayco_ext_a',
@@ -2169,7 +2187,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             'options' => array('01' => 'fija','02' => 'porcentaje'),
             'desc_tip'    => true,
             'description' => 'hace referencia al tipo de fee que se enviará al comercio principal',
-        ));
+        ));*/
         echo '</div>';
         echo  '<script type="text/javascript">
                  function update_wjecf_apply_silently_field(  ) { 
@@ -2206,7 +2224,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         update_post_meta( $id, '_super_product_a', $_POST['_super_product_a'] );
         update_post_meta( $id, 'p_cust_id_client_a', $_POST['p_cust_id_client_a'] );
         update_post_meta( $id, 'epayco_comition_a', $_POST['epayco_comition_a'] );
-        update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
+        //update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
         update_post_meta( $id, 'tax_epaycoAgregador', sanitize_text_field($_POST['tax_epaycoAgregador']) );
     }
     add_action('admin_head', 'epayco_agregador_css_icon');
@@ -2221,7 +2239,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     add_action( 'woocommerce_cart_calculate_fees','custom_tax_surcharge_for_swiss_a', 10, 1 );
     function custom_tax_surcharge_for_swiss_a( $cart ) {
         if ( is_admin() && ! defined('DOING_AJAX') ) return;
-    
+
         global $woocommerce, $post;
         $ico_value=0;
         foreach (WC()->session->get('cart') as $key => $value) {
@@ -2233,7 +2251,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             $ico = get_post_meta( $product_id, 'tax_epaycoAgregador' ) ?  intval(get_post_meta( $product_id, 'tax_epaycoAgregador' )[0]) : 0 ;
             $ico_value = $ico_value + ( $line_subtotal  ) * $ico / 100;
         }
-        
+
         if($ico_value>0){
             // Add the fee (tax third argument disabled: false)
             $cart->add_fee( __( 'ICO', 'woocommerce')."", $ico_value, false );
