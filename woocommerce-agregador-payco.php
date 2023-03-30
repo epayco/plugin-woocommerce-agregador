@@ -698,11 +698,24 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $totalSplitAmount=0;
                 $tax=$order->get_total_tax();
                 $tax=round($tax,2);
-                if((int)$tax>0){
-                    $base_tax=$order->get_total()-$tax;
-                }else{
-                    $base_tax=$order->get_total();
-                    $tax=0;
+                $iva=0;
+                $ico=0;
+                foreach($order->get_items('tax') as $item_id => $item ) {
+                    if( strtolower( $item->get_label() ) == 'iva' ){
+                        $iva = round($item->get_tax_total(),2);
+                    }
+                    if( strtolower( $item->get_label() ) == 'ico'){
+                        $ico = round($item->get_tax_total(),2);
+                    }
+                }
+                if($ico ==0 && $iva==0){
+                    $iva = round($order->get_total_tax(),2);
+                }
+                if($ico == 0 && $iva !=0){
+                    $iva = round($order->get_total_tax(),2);
+                }
+                if($ico != 0 && $iva ==0){
+                    $ico = round($order->get_total_tax(),2);
                 }
                 foreach( $order->get_items( 'shipping' ) as $item_id => $item ){
                     $item_data = $item->get_data();
@@ -710,17 +723,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $shipping_data_taxes        = $item_data['taxes'];
 
                 }
-                $ico = number_format( $base_tax- $order->get_subtotal()- floatval($shipping_data_total), 2, '.', '');
-                if($ico>0){
-                    $base_tax=$order->get_total()-$tax-$ico;
-                }
                 $isSplit = $this->split_payment == "yes";
                 foreach ($order->get_items() as $product) {
                     $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
                     if ( !empty($epayco_p_cust_id_client[0]) && $isSplit ) {
                         $isProductoWhitSplit = true;
                         $totalSplitAmount=$totalSplitAmount+floatval($product['total']);
-                       // $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
+                        // $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
                         $epayco_tipe_split= $this->split_payment_type;
                         if($epayco_tipe_split == '01'){
                             if($epayco_p_cust_id_client[0] != ""){
@@ -1042,7 +1051,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $currency,
                     $order->get_total(),
                     $order->get_subtotal(),
-                    $tax,
+                    $iva,
                     $ico,
                     $basedCountry,
                     $this->epayco_agregador_lang,
@@ -2132,7 +2141,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     }
 
-    add_filter('woocommerce_product_data_tabs', 'epayco_agregador_tax_settings_tabs' );
+    /*add_filter('woocommerce_product_data_tabs', 'epayco_agregador_tax_settings_tabs' );
     function epayco_agregador_tax_settings_tabs( $tabs ){
         $tabs['epaycoAgregador_tax'] = array(
             'label'    => 'ICO',
@@ -2142,7 +2151,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         );
         return $tabs;
 
-    }
+    }*/
 
     /*
      * Tab content
@@ -2204,7 +2213,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     }
 
-    add_action( 'woocommerce_product_data_panels', 'epayco_agregador_tax_panels' );
+    /*add_action( 'woocommerce_product_data_panels', 'epayco_agregador_tax_panels' );
     function epayco_agregador_tax_panels(){
         global $post;
         echo '<div id="epaycoAgregador_tax_data" class="panel woocommerce_options_panel hidden">';
@@ -2216,7 +2225,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             'description'       => 'porcentaje del impuesto'
         ) );
 
-    }
+    }*/
 
 
     add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
@@ -2236,7 +2245,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         </style>';
     }
 
-    add_action( 'woocommerce_cart_calculate_fees','custom_tax_surcharge_for_swiss_a', 10, 1 );
+    /*add_action( 'woocommerce_cart_calculate_fees','custom_tax_surcharge_for_swiss_a', 10, 1 );
     function custom_tax_surcharge_for_swiss_a( $cart ) {
         if ( is_admin() && ! defined('DOING_AJAX') ) return;
 
@@ -2257,6 +2266,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             $cart->add_fee( __( 'ICO', 'woocommerce')."", $ico_value, false );
         }
 
-    }
+    }*/
 
 }
