@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.7.0
+ * Version:           6.7.3
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.7.0';
+                $this->version = '6.7.3';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -619,7 +619,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'description' => __('Habilite si desea que el carrito de compras quede vacio cuando la transaccion quede en estado no aprobado', 'epayco_woocommerce'),
                         'default' => 'no',
                     ),
-                    'split_payment' => array(
+                    /*'split_payment' => array(
                         'title' => __('Habilitar splitpayment', 'epayco_agregador_woocommerce'),
                         'type' => 'checkbox',
                         'label' => __('Habilitar splitpayment', 'epayco_woocommerce'),
@@ -632,7 +632,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'css' =>'line-height: inherit',
                         'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
                         'options' => array('01' => 'fija','02' => 'porcentaje'),
-                    ),
+                    ),*/
                 );
             }
 
@@ -700,6 +700,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $tax=round($tax,2);
                 $iva=0;
                 $ico=0;
+                if((int)$tax>0){
+                    $base_tax=$order->get_total()-$tax;
+                }else{
+                    $base_tax=$order->get_total();
+                }
                 foreach($order->get_items('tax') as $item_id => $item ) {
                     if( strtolower( $item->get_label() ) == 'iva' ){
                         $iva += round($item->get_tax_total(),2);
@@ -725,7 +730,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
                 $isSplit = $this->split_payment == "yes";
                 foreach ($order->get_items() as $product) {
-                    $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
+                    /*$epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
                     if ( !empty($epayco_p_cust_id_client[0]) && $isSplit ) {
                         $isProductoWhitSplit = true;
                         $totalSplitAmount=$totalSplitAmount+floatval($product['total']);
@@ -802,7 +807,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $receiver['base_iva'] = $shipingBase;
                         $receiver['fee'] = 0;
                         array_push($receiversData, $receiver);
-                    }
+                    }*/
                     $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                     $descripcionParts[] = $clearData;
 
@@ -810,7 +815,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
                 $isSplitProducto = false;
                 $receiversWithProduct= [];
-
+/*
                 if(floatval($totalSplitAmount) != floatval($base_tax)){
                     foreach ($receiversData as  $receiverinfo) {
                         if($receiverinfo["id"] == $this->epayco_agregador_customerid){
@@ -911,7 +916,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
                     }
                 }
-
+*/
+                $split = 'false';
                 $descripcion = implode(' - ', $descripcionParts);
                 $currency = strtolower(get_woocommerce_currency());
                 $testMode = $this->epayco_agregador_testmode == "yes" ? "true" : "false";
@@ -970,7 +976,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                          </a>
                         <form id="appAgregador">
                             <script
-                                src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js"
+                                src="https://checkout.epayco.co/checkout.js"
                                 >
                             </script>
                             <script>
@@ -1000,8 +1006,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 email_billing: "%s",
                                 mobilephone_billing: "%s",
                             }
-                        
-                            let split = document.getElementById("split").textContent;
+
+                            /*let split = document.getElementById("split").textContent;
                             if(split == "true"){
                                 var js_array ='.json_encode($receiversInfo).';
                                 let split_receivers = [];
@@ -1014,16 +1020,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         "fee" : jsa.fee
                                     });
                                 }
-                                data.split_app_id= "%s", //Id de la cuenta principal
-                                data.split_merchant_id= "%s", //Id de la cuenta principal y a nombre de quien quedara la transacción
+                                data.split_app_id= "", //Id de la cuenta principal
+                                data.split_merchant_id= "", //Id de la cuenta principal y a nombre de quien quedara la transacción
                                 data.split_type= "01", // tipo de dispersión 01 -> fija ---- 02 -> porcentual
-                                data.split_primary_receiver= "%s", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
+                                data.split_primary_receiver= "", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
                                 data.split_primary_receiver_fee= "0", // Parámetro no a utilizar pero que debe de ir en cero
                                 data.splitpayment= "true", // Indicación de funcionalidad split
                                 data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
                                 data.split_receivers= split_receivers
                             }
-    
+    */
                             
                            
                             handler.onCloseModal = function () {};
@@ -1062,9 +1068,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $address_billing,
                     $email_billing,
                     $phone_billing,
-                    $this->epayco_agregador_customerid,
+                    /*$this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid
+                    */
                 );
 
             }
@@ -2129,7 +2136,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         <?php
     }
 
-    add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
+    //add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
     function epayco_agregador_product_settings_tabs( $tabs ){
         $tabs['epayco_agregador'] = array(
             'label'    => 'Receivers Agregadores',
@@ -2156,7 +2163,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     /*
      * Tab content
      */
-    add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
+    //add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
     function epayco_agregador_product_panels(){
         global $post;
         echo '<div id="epayco_agregador_product_data" class="panel woocommerce_options_panel hidden">';
@@ -2228,7 +2235,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     }*/
 
 
-    add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
+    //add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
     function epayco_agregador_save_fields( $id, $post ){
         update_post_meta( $id, '_super_product_a', $_POST['_super_product_a'] );
         update_post_meta( $id, 'p_cust_id_client_a', $_POST['p_cust_id_client_a'] );
@@ -2236,7 +2243,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         //update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
         update_post_meta( $id, 'tax_epaycoAgregador', sanitize_text_field($_POST['tax_epaycoAgregador']) );
     }
-    add_action('admin_head', 'epayco_agregador_css_icon');
+    //add_action('admin_head', 'epayco_agregador_css_icon');
     function epayco_agregador_css_icon(){
         echo '<style>
         #woocommerce-product-data ul.wc-tabs li.epayco_agregador_options.epayco_agregador_tab a:before{
