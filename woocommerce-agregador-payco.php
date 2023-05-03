@@ -700,6 +700,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $tax=round($tax,2);
                 $iva=0;
                 $ico=0;
+                if((int)$tax>0){
+                    $base_tax=$order->get_total()-$tax;
+                }else{
+                    $base_tax=$order->get_total();
+                }
                 foreach($order->get_items('tax') as $item_id => $item ) {
                     if( strtolower( $item->get_label() ) == 'iva' ){
                         $iva += round($item->get_tax_total(),2);
@@ -738,13 +743,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
                                 if ($epayco_super_product[0] != "yes") {
                                     $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
-                                    $receiversa['total'] = floatval($product['total']);
+                                    $receiversa['total'] = round(floatval($product['total']),2);
                                     $fee =  $productTotalComision;
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
-                                    $receiversa['fee'] = $fee;
+                                    $receiversa['fee'] = round($fee,2);
                                 } else {
-                                    $receiversa['total'] = floatval($product['total']);
+                                    $receiversa['total'] = round(floatval($product['total']),2);
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
                                     $receiversa['fee'] = 0;
@@ -754,7 +759,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 }
                             }else{
                                 $receiversa['id'] = $this->epayco_agregador_customerid;
-                                $receiversa['total'] = floatval($product['total']);
+                                $receiversa['total'] = round(floatval($product['total']),2);
                                 $receiversa['iva'] = 0;
                                 $receiversa['base_iva'] = 0;
                                 $receiversa['fee'] = 0;
@@ -768,13 +773,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                                 if ($epayco_super_product[0] != "yes") {
                                     $productTotalComision = ((floatval($epayco_epayco_comition[0])  * floatval($product['total']))/100);
-                                    $receiversa['total'] = floatval($product['total']);
-                                    $fee =  $productTotalComision;
+                                    $receiversa['total'] = round(floatval($product['total']),2);
+                                    $fee =  round($productTotalComision,2);
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
                                     $receiversa['fee'] = $fee;
                                 } else {
-                                    $receiversa['total'] = floatval($product['total']);
+                                    $receiversa['total'] = round(floatval($product['total']),2);
                                     $receiversa['iva'] = 0;
                                     $receiversa['base_iva'] = 0;
                                     $receiversa['fee'] = 0;
@@ -784,7 +789,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 }
                             }else{
                                 $receiversa['id'] = $this->epayco_agregador_customerid;
-                                $receiversa['total'] = floatval($product['total']);
+                                $receiversa['total'] = round(floatval($product['total']),2);
                                 $receiversa['iva'] = 0;
                                 $receiversa['base_iva'] = 0;
                                 $receiversa['fee'] = 0;
@@ -797,9 +802,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $shipingBase  = floatval($product['total']);
                         $shipingTax = $tax;
                         $receiver['id'] = $this->epayco_agregador_customerid;
-                        $receiver['total'] = $shipingTotal;
-                        $receiver['iva'] = $shipingTax;
-                        $receiver['base_iva'] = $shipingBase;
+                        $receiver['total'] = round($shipingTotal,2);
+                        $receiver['iva'] = round($shipingTax,2);
+                        $receiver['base_iva'] = round($shipingBase,2);
                         $receiver['fee'] = 0;
                         array_push($receiversData, $receiver);
                     }
@@ -828,9 +833,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             $receiverTax+=$dato["iva"];
                             $receiverBase+=$dato["base_iva"];
                             $receiver['id'] = $this->epayco_agregador_customerid;
-                            $receiver['total'] = $receiverTotal;
-                            $receiver['iva'] = $receiverTax;
-                            $receiver['base_iva'] = $receiverBase;
+                            $receiver['total'] = round($receiverTotal,2);
+                            $receiver['iva'] = round($receiverTax,2);
+                            $receiver['base_iva'] = round($receiverBase,2);
                             $receiver['fee'] = 0;
                         }
                     }
@@ -840,9 +845,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         foreach ($receiversData as  $k => $dato) {
                             if($dato["id"] != $this->epayco_agregador_customerid){
                                 $receiver['id'] = $dato["id"];
-                                $receiver['total'] = $dato["total"];
-                                $receiver['iva'] = $dato["iva"];
-                                $receiver['base_iva'] = $dato["base_iva"];
+                                $receiver['total'] = round($dato["total"],2);
+                                $receiver['iva'] = round($dato["iva"],2);
+                                $receiver['base_iva'] = round($dato["base_iva"],2);
                                 $receiver['fee'] = 0;
                                 array_push($receiversWithProduct, $receiver);
                             }
@@ -853,9 +858,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         foreach ($receivers as  $k => $dato) {
                             if($dato["id"] == $this->epayco_agregador_customerid){
                                 $receiver_['id'] = $this->epayco_agregador_customerid;
-                                $receiver_['total'] = $dato["total"]+floatval($shipping_data_total);
-                                $receiver_['iva'] = $dato["iva"];
-                                $receiver_['base_iva'] = $dato["base_iva"]+floatval($shipping_data_total);
+                                $receiver_['total'] = round(($dato["total"]+floatval($shipping_data_total)),2);
+                                $receiver_['iva'] = round($dato["iva"],2);
+                                $receiver_['base_iva'] = round(($dato["base_iva"]+floatval($shipping_data_total)),2);
                                 $receiver_['fee'] = 0;
                             }
                         }
