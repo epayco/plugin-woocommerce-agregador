@@ -95,7 +95,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
                 add_action('wp_ajax_nopriv_returndata',array($this,'datareturnepaycoagregador_ajax'));
                 add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-
+                add_filter('woocommerce_available_payment_gateways',array( $this, 'filter_gateways_agregador' ),1);
                 if ($this->epayco_agregador_testmode == "yes") {
                     if (class_exists('WC_Logger')) {
                         $this->log = new WC_Logger();
@@ -112,6 +112,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function is_valid_for_use()
             {
                 return in_array(get_woocommerce_currency(), array('COP', 'USD'));
+            }
+
+            function filter_gateways_agregador($gateways){
+                global $woocommerce;
+                $currency = array('USD','COP');
+                if(!in_array(get_woocommerce_currency(),$currency)) {
+                    unset($gateways['epayco_agregador']);
+                }
+                return $gateways;
             }
 
             public function admin_options()
