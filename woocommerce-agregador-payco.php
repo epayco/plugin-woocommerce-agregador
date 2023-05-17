@@ -742,14 +742,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $isSplit = $this->split_payment == "yes";
                 foreach ($order->get_items() as $product) {
                     $epayco_p_cust_id_client = get_post_meta( $product["product_id"], 'p_cust_id_client_a' );
-                    $product_tax = $product["taxes"]["total"][1];
+                    $product_tax = 0;
+    
+                    foreach ($product["taxes"]["total"] as $clave => $valorProduct) {
+                        if($product_tax==0){
+                            $product_tax = $valorProduct;
+                        }
+                    }
+                 
                     if ( !empty($epayco_p_cust_id_client[0]) && $isSplit ) {
                         $isProductoWhitSplit = true;
                         $totalSplitAmount=$totalSplitAmount+floatval($product['total']);
                         // $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
                         $epayco_tipe_split= $this->split_payment_type;
                         if($epayco_tipe_split == '01'){
-                            if($epayco_p_cust_id_client[0] != ""){
+                            if(!empty($epayco_p_cust_id_client[0])){
                                 $receiversa['id'] = $epayco_p_cust_id_client[0];
                                 $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
                                 $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
@@ -778,7 +785,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 array_push($receiversData, $receiversa);
                             }
                         }else{
-                            if($epayco_p_cust_id_client[0] != ""){
+                            if(!empty($epayco_p_cust_id_client[0])){
                                 $receiversa['id'] = $epayco_p_cust_id_client[0];
                                 $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
                                 $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
@@ -825,6 +832,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                     
                 }   
+               
                 $isSplitProducto = false;
                 $receiversWithProduct= [];
 
@@ -1017,7 +1025,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 email_billing: "%s",
                                 mobilephone_billing: "%s",
                             }
-                        
+                            console.log(data)
                             let split = document.getElementById("split").textContent;
                             if(split == "true"){
                                 var js_array ='.json_encode($receiversInfo).';
