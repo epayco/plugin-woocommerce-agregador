@@ -709,11 +709,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $tax=round($tax,2);
                 $iva=0;
                 $ico=0;
-                if((int)$tax>0){
-                    $base_tax=$order->get_total()-$tax;
-                }else{
-                    $base_tax=$order->get_total();
-                }
+                $base_tax=$order->get_subtotal()-$order->get_total_discount();
                 foreach($order->get_items('tax') as $item_id => $item ) {
                     if( strtolower( $item->get_label() ) == 'iva' ){
                         $iva += round($item->get_tax_total(),2);
@@ -832,7 +828,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                     
                 }   
-
+               
                 $isSplitProducto = false;
                 $receiversWithProduct= [];
 
@@ -860,7 +856,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         }
                     }
                     array_push($receivers, $receiver);
-
+            
                     if($isSplitProducto){
                         foreach ($receiversData as  $k => $dato) {
                             if($dato["id"] != $this->epayco_agregador_customerid){
