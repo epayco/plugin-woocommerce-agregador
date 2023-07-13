@@ -114,7 +114,7 @@ class EpaycoAgregadorOrder{
 
         $charset_collate = $wpdb->get_charset_collate();
 
-        $sql = "CREATE TABLE IF NOT  EXISTS $table_name (
+        $sql = "CREATE TABLE ".$table_name."(
 
 		    id INT NOT NULL AUTO_INCREMENT,
 
