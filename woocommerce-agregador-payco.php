@@ -1899,24 +1899,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             if ( ( method_exists( $ts_current_screen, 'is_block_editor' ) && $ts_current_screen->is_block_editor() ) || ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() ) ) {
                 return;
             }
-            if ( 'yes' === get_option( 'alg_custom_order_numbers_show_admin_notice', '' ) ) {
-                if ( '' === get_option( 'alg_custom_order_numbers_update_database', '' ) ) {
-                    ?>
-                    <div class=''>
-                        <div class="con-lite-message notice notice-info" style="position: relative;">
-                            <p style="margin: 10px 0 10px 10px; font-size: medium;">
-                                <?php
-                                echo esc_html_e( 'From version 1.3.0, you can now search the orders by custom order numbers on the Orders page. In order to make the previous orders with custom order numbers searchable on Orders page, we need to update the database. Please click the "Update Now" button to do this. The database update process will run in the background.', 'epayco_woocommerce' );
-                                ?>
-                            </p>
-                            <p class="submit" style="margin: -10px 0 10px 10px;">
-                                <a class="button-primary button button-large" id="con-lite-update" href="edit.php?post_type=shop_order&action=alg_custom_order_numbers_update_old_con_in_database"><?php esc_html_e( 'Update Now', 'epayco_woocommerce' ); ?></a>
-                            </p>
-                        </div>
-                    </div>
-                    <?php
-                }
-            }
         }
 
         /**
