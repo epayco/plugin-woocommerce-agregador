@@ -1016,14 +1016,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 external: "%s",
                                 confirmation: "%s",
                                 response: "%s",
- 
                                 //Atributos cliente
                                 name_billing: "%s",
                                 address_billing: "%s",
                                 email_billing: "%s",
                                 mobilephone_billing: "%s",
                             }
-                            
                             let split = document.getElementById("split").textContent;
                             if(split == "true"){
                                 var js_array ='.json_encode($receiversInfo).';
@@ -1046,7 +1044,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
                                 data.split_receivers= split_receivers
                             }
-                            
                             handlerAgregador.onCloseModal = function () {};
                             var isForceRedirect='.$force_redirect.';
                             if(isForceRedirect == true){
@@ -1057,7 +1054,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     window.location.href = responseUrl
                                 });
                             }
-
                             let responseUrl = document.getElementById("response").textContent;
                             handlerAgregador.onCloseModal = function () {};
                         </script>
@@ -1085,9 +1081,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid
-                    
                 );
-
             }
 
 
@@ -1898,44 +1892,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             // Return when we're on any edit screen, as notices are distracting in there.
             if ( ( method_exists( $ts_current_screen, 'is_block_editor' ) && $ts_current_screen->is_block_editor() ) || ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() ) ) {
                 return;
-            }
-            if ( 'yes' === get_option( 'alg_custom_order_numbers_show_admin_notice', '' ) ) {
-                if ( '' === get_option( 'alg_custom_order_numbers_update_database', '' ) ) {
-                    ?>
-                    <div class=''>
-                        <div class="con-lite-message notice notice-info" style="position: relative;">
-                            <p style="margin: 10px 0 10px 10px; font-size: medium;">
-                                <?php
-                                echo esc_html_e( 'From version 1.3.0, you can now search the orders by custom order numbers on the Orders page. In order to make the previous orders with custom order numbers searchable on Orders page, we need to update the database. Please click the "Update Now" button to do this. The database update process will run in the background.', 'epayco_woocommerce' );
-                                ?>
-                            </p>
-                            <p class="submit" style="margin: -10px 0 10px 10px;">
-                                <a class="button-primary button button-large" id="con-lite-update" href="edit.php?post_type=shop_order&action=alg_custom_order_numbers_update_old_con_in_database"><?php esc_html_e( 'Update Now', 'epayco_woocommerce' ); ?></a>
-                            </p>
-                        </div>
-                    </div>
-                    <?php
-                }
-            }
-            if ( 'yes' !== get_option( 'alg_custom_order_numbers_no_meta_admin_notice', '' ) ) {
-                if ( 'yes' === get_option( 'alg_custom_order_number_old_orders_to_update_meta_key', '' ) ) {
-                    if ( '' === get_option( 'alg_custom_order_numbers_update_meta_key_in_database', '' ) ) {
-                        ?>
-                        <div class=''>
-                            <div class="con-lite-message notice notice-info" style="position: relative;">
-                                <p style="margin: 10px 0 10px 10px; font-size: medium;">
-                                    <?php
-                                    echo esc_html_e( 'In order to make the previous orders searchable on Orders page where meta key of the custom order number is not present, we need to update the database. Please click the "Update Now" button to do this. The database update process will run in the background.', 'epayco_woocommerce' );
-                                    ?>
-                                </p>
-                                <p class="submit" style="margin: -10px 0 10px 10px;">
-                                    <a class="button-primary button button-large" id="con-lite-update" href="edit.php?post_type=shop_order&action=alg_custom_order_numbers_update_old_con_with_meta_key"><?php esc_html_e( 'Update Now', 'epayco_woocommerce' ); ?></a>
-                                </p>
-                            </div>
-                        </div>
-                        <?php
-                    }
-                }
             }
         }
 
