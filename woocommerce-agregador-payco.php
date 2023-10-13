@@ -1016,14 +1016,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 external: "%s",
                                 confirmation: "%s",
                                 response: "%s",
- 
                                 //Atributos cliente
                                 name_billing: "%s",
                                 address_billing: "%s",
                                 email_billing: "%s",
                                 mobilephone_billing: "%s",
                             }
-                            
                             let split = document.getElementById("split").textContent;
                             if(split == "true"){
                                 var js_array ='.json_encode($receiversInfo).';
@@ -1046,7 +1044,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
                                 data.split_receivers= split_receivers
                             }
-                            
                             handlerAgregador.onCloseModal = function () {};
                             var isForceRedirect='.$force_redirect.';
                             if(isForceRedirect == true){
@@ -1057,7 +1054,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     window.location.href = responseUrl
                                 });
                             }
-
                             let responseUrl = document.getElementById("response").textContent;
                             handlerAgregador.onCloseModal = function () {};
                         </script>
@@ -1085,9 +1081,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid
-                    
                 );
-
             }
 
 
@@ -1420,13 +1414,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                             }
 
-                            if($isTestMode=="true"){
-                                $message = 'Pago pendiente de aprobación Prueba';
-                                $orderStatus = "epayco_on_hold";
-                            }else{
-                                $message = 'Pago pendiente de aprobación';
-                                $orderStatus = "epayco-on-hold";
-                            }
+                            
+                            $orderStatus = "on-hold";
                             if($x_franchise != "PSE"){
                                 $order->update_status($orderStatus);
                                 $order->add_order_note($message);
