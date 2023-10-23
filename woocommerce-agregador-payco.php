@@ -1414,13 +1414,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                             }
 
-                            if($isTestMode=="true"){
-                                $message = 'Pago pendiente de aprobación Prueba';
-                                $orderStatus = "epayco_on_hold";
-                            }else{
-                                $message = 'Pago pendiente de aprobación';
-                                $orderStatus = "epayco-on-hold";
-                            }
+                            $message = 'Pago pendiente de aprobación';
+                            $orderStatus = "on-hold";
                             if($x_franchise != "PSE"){
                                 $order->update_status($orderStatus);
                                 $order->add_order_note($message);
