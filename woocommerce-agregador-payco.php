@@ -6,7 +6,7 @@
  * @wordpress-plugin
  * Plugin Name:       ePayco for WooCommerce
  * Description:       Plugin ePayco for WooCommerce.
- * Version:           6.7.3
+ * Version:           6.7.4
  * Author:            ePayco
  * Author URI:        http://epayco.co
  * License:           GNU General Public License v3.0
@@ -35,7 +35,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 $this->id = 'epayco_agregador';
-                $this->version = '6.7.3';
+                $this->version = '6.7.4';
                 $url_icon = plugin_dir_url(__FILE__)."lib";
                 $dir_ = __DIR__."/lib";
                 if(is_dir($dir_)) {
@@ -64,6 +64,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->epayco_agregador_customerid = $this->get_option('epayco_agregador_customerid');
                 $this->epayco_agregador_secretkey = $this->get_option('epayco_agregador_secretkey');
                 $this->epayco_agregador_publickey = $this->get_option('epayco_agregador_publickey');
+                $this->epayco_agregador_privatekey = $this->get_option('epayco_agregador_privatekey');
                 $this->monto_maximo = $this->get_option('monto_maximo');
                 $this->max_monto = $this->get_option('monto_maximo');
                 $this->description = $this->get_option('description');
@@ -242,9 +243,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         </div>
 
                         <div style ="color: #31708f; background-color: #d9edf7; border-color: #bce8f1;padding: 10px;border-radius: 5px;">
-                            <b>Este modulo le permite aceptar pagos seguros por la plataforma de pagos ePayco</b>
-                            <br>Si el cliente decide pagar por ePayco, el estado del pedido cambiara a ePayco Esperando Pago
-                            <br>Cuando el pago sea Aceptado o Rechazado ePayco envia una configuracion a la tienda para cambiar el estado del pedido.
+                            Este módulo le permite aceptar pagos seguros por la plataforma de pagos ePayco.
+                            Si el cliente decide pagar por ePayco, el estado del pedido cambiará a <b> Esperando Pago</b>.
+                            <br>Cuando el pago sea Aceptado o Rechazado ePayco envía una confirmación a la tienda para cambiar el estado del pedido.
                         </div>
 
                         <div class="panel-body" style="padding: 15px 0;background: #fff;margin-top: 15px;border-radius: 5px;border: 1px solid #dcdcdc;border-top: 1px solid #dcdcdc;">
@@ -289,7 +290,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     </script>               
                                         <tr valign="top">
                                             <th scope="row" class="titledesc">
-                                                <label for="woocommerce_epayco_enabled">'. __( 'ePayco: validar llaves', 'epayco_agregador_woocommerce' ) .'</label>
+                                                <label for="woocommerce_epayco_enabled">'. __( 'ePayco: Validar llaves', 'epayco_agregador_woocommerce' ) .'</label>
                                                 <span hidden id="public_key">0</span>
                                                 <span hidden id="private_key">0</span>
                                             </th>
@@ -299,7 +300,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                                     </label>
                                                     <input type="button" class="button-primary woocommerce-save-button validar" value="Validar">
                                                     <p class="description">
-                                                    validacion de llaves PUBLIC_KEY y PRIVATE_KEY
+                                                    Validación de llaves PUBLIC_KEY y PRIVATE_KEY
                                                     </p>
                                                 </form>  
                                                 <br>
@@ -331,7 +332,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                                         <tr valign="top">
                                           <th scope="row" class="titledesc">
-                                             <label for="woocommerce_epayco_enabled">'. __( 'ePayco: cambiar logo', 'epayco_agregador_woocommerce' ) .'</label>
+                                             <label for="woocommerce_epayco_enabled">'. __( 'ePayco: Cambiar logo', 'epayco_agregador_woocommerce' ) .'</label>
                                           </th>
                                             <td class="forminp">
                                             <script>
@@ -493,15 +494,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'epayco_agregador_title' => array(
                         'title' => __('<span class="epayco-required">Título</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('Corresponde al titulo que el usuario ve durante el checkout.', 'epayco_agregador_woocommerce'),
-                        'default' => __('Checkout ePayco (Tarjetas de crédito,debito,efectivo)', 'epayco_agregador_woocommerce'),
+                        'description' => __('Corresponde al título que el usuario ve durante el Checkout.', 'epayco_agregador_woocommerce'),
+                        'default' => __('Checkout ePayco (Tarjetas de crédito,débito,efectivo)', 'epayco_agregador_woocommerce'),
                         //'desc_tip' => true,
                     ),
                     'description' => array(
                         'title' => __('<span class="epayco-required">Descripción</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'textarea',
-                        'description' => __('Corresponde a la descripción que verá el usuaro durante el checkout', 'epayco_agregador_woocommerce'),
-                        'default' => __('Checkout ePayco (Tarjetas de crédito,debito,efectivo)', 'epayco_agregador_woocommerce'),
+                        'description' => __('Corresponde a la descripción que verá el usuario durante el Checkout', 'epayco_agregador_woocommerce'),
+                        'default' => __('Checkout ePayco (Tarjetas de crédito,débito,efectivo)', 'epayco_agregador_woocommerce'),
                         //'desc_tip' => true,
                     ),
                     'epayco_agregador_testmode' => array(
@@ -516,8 +517,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'type' => 'select',
                         'css' =>'line-height: inherit',
                         'label' => __('Seleccione un tipo de Checkout:', 'epayco_agregador_woocommerce'),
-                        'description' => __('(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standart Checkout, el usario al pagar es redireccionado a la pasarela de ePayco)', 'epayco_agregador_woocommerce'),
-                        'options' => array('false'=>"Onpage Checkout","true"=>"Standart Checkout"),
+                        'description' => __('(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standard Checkout, el usario al pagar es redireccionado a la pasarela de ePayco)', 'epayco_agregador_woocommerce'),
+                        'options' => array('false'=>"Onpage Checkout","true"=>"Standard Checkout"),
                     ),
                     'epayco_agregador_endorder_state' => array(
                         'title' => __('Estado Final del Pedido', 'epayco_agregador_woocommerce'),
@@ -535,7 +536,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'title' => __('Estado Orden cancelada del Pedido', 'epayco_agregador_woocommerce'),
                         'type' => 'select',
                         'css' =>'line-height: inherit',
-                        'description' => __('Seleccione el estado del pedido rechazado o cancelado que se aplicará', 'epayco_agregador_woocommerce'),
+                        'description' => __('Seleccione el estado del pedido que se aplicará cuando la transacción es Cancelada o Rechazada', 'epayco_agregador_woocommerce'),
                         'options' => array(
                             "epayco-cancelled"=>"ePayco Pago Cancelado",
                             "cancelled"=>"Cancelado",
@@ -573,14 +574,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'response_data' => array(
                         'title' => __('Habilitar envió de atributos a través de la URL de respuesta', 'epayco_agregador_woocommerce'),
                         'type' => 'checkbox',
-                        'label' => __('Habilitar el modo redireccion con data', 'epayco_agregador_woocommerce'),
+                        'label' => __('Habilitar el modo redirección con data', 'epayco_agregador_woocommerce'),
                         'description' => __('Al habilitar esta opción puede exponer información sensible de sus clientes, el uso de esta opción es bajo su responsabilidad, conozca esta información en el siguiente  <a href="https://docs.epayco.co/payments/checkout#scroll-response-p" target="_blank">link.</a>', 'epayco_agregador_woocommerce'),
                         'default' => 'no',
                     ),
                     'monto_maximo' => array(
                         'title' => __('monto maximo', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('ingresa el monto maximo permitido ha pagar por el método de pago', 'epayco_agregador_woocommerce'),
+                        'description' => __('Ingresa el monto máximo permitido a pagar por el método de pago', 'epayco_agregador_woocommerce'),
                         'default' => '3000000',
                         //'desc_tip' => true,
                         'placeholder' => '3000000',
@@ -588,7 +589,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'epayco_agregador_customerid' => array(
                         'title' => __('<span class="epayco-required">P_CUST_ID_CLIENTE</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('ID de cliente que lo identifica en ePayco. Lo puede encontrar en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
+                        'description' => __('ID de cliente que lo identifica en ePayco. Lo puede encontrar en su panel de clientes en la opción configuración', 'epayco_agregador_woocommerce'),
                         'default' => '',
                         //'desc_tip' => true,
                         'placeholder' => '',
@@ -596,29 +597,29 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'epayco_agregador_secretkey' => array(
                         'title' => __('<span class="epayco-required">P_KEY</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('LLave para firmar la información enviada y recibida de ePayco. Lo puede encontrar en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
+                        'description' => __('LLave para firmar la información enviada y recibida de ePayco. Lo puede encontrar en su panel de clientes en la opción configuración', 'epayco_agregador_woocommerce'),
                         'default' => '',
                         'placeholder' => ''
                     ),
                     'epayco_agregador_publickey' => array(
                         'title' => __('<span class="epayco-required">PUBLIC_KEY</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
+                        'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración', 'epayco_agregador_woocommerce'),
                         'default' => '',
                         'placeholder' => ''
                     ),
                     'epayco_agregador_privatekey' => array(
                         'title' => __('<span class="epayco-required">PRIVATE_KEY</span>', 'epayco_agregador_woocommerce'),
                         'type' => 'text',
-                        'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración.', 'epayco_agregador_woocommerce'),
+                        'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración', 'epayco_agregador_woocommerce'),
                         'default' => '',
                         'placeholder' => ''
                     ),
                     'force_redirect' => array(
-                        'title' => __('Habilitar redirección al cierre del checkout', 'epayco_woocommerce'),
+                        'title' => __('Habilitar redirección al cierre del Checkout', 'epayco_woocommerce'),
                         'type' => 'checkbox',
                         'label' => __('Habilitar redirección de pagador a URL de respuesta en caso de que cierre el Checkout', 'epayco_agregador_woocommerce'),
-                        'description' => __('Habilite si desea que el usuario pagador al cancelar la transacción o cerrar el checkout sea redirigido a la URL de respuesta configurada.', 'epayco_agregador_woocommerce'),
+                        'description' => __('Habilite si desea que el usuario pagador al Cancelar la transacción o cerrar el Checkout sea redirigido a la URL de respuesta configurada', 'epayco_agregador_woocommerce'),
                         'default' => 'no',
                     ),
                     'clear_cart' => array(
@@ -959,7 +960,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $phone_billing=@$order->billing_phone;
                 $email_billing=@$order->billing_email;
                 $order = new WC_Order($order_id);
-
+                $myIp=$this->getCustomerIp();
                 //Busca si ya se restauro el stock
                 if (!EpaycoAgregadorOrder::ifExist($order_id)) {
                     //si no se restauro el stock restaurarlo inmediatamente
@@ -1007,10 +1008,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 description: "%s",
                                 invoice:"%s",
                                 currency: "%s",
-                                amount: "%s",
-                                tax_base: "%s",
-                                tax: "%s",
-                                taxIco: "%s",
+                                amount: "%s".toString(),
+                                tax_base: "%s".toString(),
+                                tax: "%s".toString(),
+                                taxIco: "%s".toString(),
                                 country: "%s",
                                 lang: "%s",
                                 external: "%s",
@@ -1021,6 +1022,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 address_billing: "%s",
                                 email_billing: "%s",
                                 mobilephone_billing: "%s",
+                                autoclick: "true"
                             }
                             let split = document.getElementById("split").textContent;
                             if(split == "true"){
@@ -1035,27 +1037,67 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         "fee" : jsa.fee
                                     });
                                 }
-                                data.split_app_id= "", //Id de la cuenta principal
-                                data.split_merchant_id= "", //Id de la cuenta principal y a nombre de quien quedara la transacción
+                                data.split_app_id= "%s", //Id de la cuenta principal
+                                data.split_merchant_id= "%s", //Id de la cuenta principal y a nombre de quien quedara la transacción
                                 data.split_type= "01", // tipo de dispersión 01 -> fija ---- 02 -> porcentual
-                                data.split_primary_receiver= "", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
+                                data.split_primary_receiver= "%s", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
                                 data.split_primary_receiver_fee= "0", // Parámetro no a utilizar pero que debe de ir en cero
                                 data.splitpayment= "true", // Indicación de funcionalidad split
                                 data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
                                 data.split_receivers= split_receivers
                             }
-                            handlerAgregador.onCloseModal = function () {};
-                            var isForceRedirect='.$force_redirect.';
-                            if(isForceRedirect == true){
-                                let responseUrl = document.getElementById("response").textContent;
-                                handler.onCreated(function(response) {
-                                }).onResponse(function(response) {
-                                }).onClosed(function(response) {
-                                    window.location.href = responseUrl
-                                });
+                            data.ip= "%s",
+                            data.test= "%s".toString()
+                            const apiKey = "%s";
+                            const privateKey = "%s";
+                            var openChekoutAgregador = function () {
+                            debugger
+                                if(localStorage.getItem("invoicePaymentAgregador") == null){
+                                 localStorage.setItem("invoicePaymentAgregador", data.invoice);
+                                   makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+                                 }else{
+                                     if(localStorage.getItem("invoicePaymentAgregador") != data.invoice){
+                                         localStorage.removeItem("invoicePaymentAgregador");
+                                         localStorage.setItem("invoicePaymentAgregador", data.invoice);
+                                           makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+                                     }else{
+                                        makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
+                                     }
+                                 }
                             }
-                            let responseUrl = document.getElementById("response").textContent;
-                            handlerAgregador.onCloseModal = function () {};
+                            var makePayment = function (privatekey, apikey, info, external) {
+                              const headers = { "Content-Type": "application/json" } ;
+                              headers["privatekey"] = privatekey;
+                              headers["apikey"] = apikey;
+                              var payment =   function (){
+                                  return  fetch("https://cms.epayco.io/checkout/payment/session", {
+                                      method: "POST",
+                                      body: JSON.stringify(info),
+                                      headers
+                                  })
+                                      .then(res =>  res.json())
+                                      .catch(err => err);
+                              }
+                              payment()
+                                  .then(session => {
+                                      if(session.data.sessionId != undefined){
+                                          localStorage.removeItem("sessionPaymentAgregador");
+                                          localStorage.setItem("sessionPaymentAgregador", session.data.sessionId);
+                                          const handlerNew = window.ePayco.checkout.configure({
+                                              sessionId: session.data.sessionId,
+                                              external: external,
+                                          });
+                                          handlerNew.openNew()
+                                      }
+                                  })
+                                  .catch(error => {
+                                      error.message;
+                                  });
+                            }
+                              //setTimeout(openChekoutAgregador, 2000)  
+                              openChekoutAgregador()
+                              var bntPagar = document.getElementById("btn_epayco_agregador");
+                              bntPagar.addEventListener("click", openChekoutAgregador);
                         </script>
                         </form>
                         </center>
@@ -1080,7 +1122,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $phone_billing,
                     $this->epayco_agregador_customerid,
                     $this->epayco_agregador_customerid,
-                    $this->epayco_agregador_customerid
+                    $this->epayco_agregador_customerid,
+                    $myIp,
+                    $testMode,
+                    trim($this->epayco_agregador_publickey),
+                    trim($this->epayco_agregador_privatekey)
                 );
             }
 
@@ -1816,6 +1862,27 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     wc_update_product_stock($product, $qty, $operation);
                 }
 
+            }
+
+            public function getCustomerIp(){
+                $ipaddress = '';
+                if (isset($_SERVER['HTTP_CLIENT_IP']))
+                    $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+                else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+                    $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+                else if(isset($_SERVER['HTTP_X_FORWARDED']))
+                    $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+                else if(isset($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+                    $ipaddress = $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
+                else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
+                    $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+                else if(isset($_SERVER['HTTP_FORWARDED']))
+                    $ipaddress = $_SERVER['HTTP_FORWARDED'];
+                else if(isset($_SERVER['REMOTE_ADDR']))
+                    $ipaddress = $_SERVER['REMOTE_ADDR'];
+                else
+                    $ipaddress = 'UNKNOWN';
+                return $ipaddress;
             }
 
 
