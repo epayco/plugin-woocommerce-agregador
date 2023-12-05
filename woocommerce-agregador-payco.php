@@ -1462,7 +1462,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                             
                             $orderStatus = "on-hold";
-                            if($x_franchise != "PSE"){
+                            if($x_franchise != "PSE" && $current_state != $orderStatus){
                                 $order->update_status($orderStatus);
                                 $order->add_order_note($message);
                                 if($current_state == "epayco_failed" ||
@@ -1472,7 +1472,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $current_state == "epayco-failed"
                                 ){
                                     $this->restore_order_stock($order->get_id(),"decrease");
-                                }
+                                }else{
+                                    $this->restore_order_stock($order->get_id());
+                                } 
                             }
                             echo "3";
                         } break;
