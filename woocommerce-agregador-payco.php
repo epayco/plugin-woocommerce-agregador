@@ -1419,7 +1419,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                 EpaycoAgregadorOrder::updateStockDiscount($order_id,1);
                             }
 
-                            
+                            $message = 'Pago pendiente de aprobación';
                             $orderStatus = "on-hold";
                             if($current_state != $orderStatus){
                                 $order->update_status($orderStatus);
