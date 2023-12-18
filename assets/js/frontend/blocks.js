@@ -5,7 +5,7 @@
         n=window.wc.wcBlocksRegistry,
         s=window.wp.htmlEntities,
         a=window.wc.wcSettings,
-        l=(0,a.getSetting)("epaycoagregador_data",{}),
+        l=(0,a.getSetting)("epayco_agregador_data",{}),
         o=(0,t.__)("EpaycoAgregador","woo-epayco-agregador"),
         c=(0,s.decodeEntities)(l.title)||o,
         w=()=>(0,s.decodeEntities)(l.description||""),
