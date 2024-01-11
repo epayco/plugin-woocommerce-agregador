@@ -15,6 +15,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 	public function __construct() {
 
 		$this->id                   = 'epayco_agregador';
+        $this->version = '7.0.0';
 		$logo_url = $this->get_option( 'logo' );
 		if ( ! empty( $logo_url ) ) {
 			$logo_url   = $this->get_option( 'logo' );
@@ -388,15 +389,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                 $ico += round($item->get_tax_total(),2);
             }
         }
-        if($ico ==0 && $iva==0){
-            $iva = round($order->get_total_tax(),2);
-        }
-        if($ico == 0 && $iva !=0){
-            $iva = round($order->get_total_tax(),2);
-        }
-        if($ico != 0 && $iva ==0){
-            $ico = round($order->get_total_tax(),2);
-        }
+        
 
         foreach ($order->get_items() as $product) {
             $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
@@ -432,6 +425,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
         }
 
         echo sprintf('
+                    <script
+                       src="https://checkout.epayco.co/checkout.js">
+                    </script>
                     <script> var handler = ePayco.checkout.configure({
                         key: "%s",
                         test: "%s"
@@ -461,6 +457,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     }
                     const apiKey = "%s";
                     const privateKey = "%s";
+                    var openChekout = function () {
+                        handler.open(data);
+                    }
+                    var bntPagar = document.getElementById("btn_epayco");
+                    bntPagar.addEventListener("click", openChekout);
+            	    openChekout()
                 </script>
                 </form>
                 </center>
@@ -488,9 +490,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             trim($this->epayco_agregador_publickey),
             trim($this->epayco_agregador_privatekey)
         );
-        wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', array(), $this->version, null);
+        wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout.js', array(), $this->version, null);
 		wc_enqueue_js('
-         var openChekout = function () {
+         var openNewChekout = function () {
             if(localStorage.getItem("invoicePayment") == null){
                 localStorage.setItem("invoicePayment", data.invoice);
                 makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
@@ -509,7 +511,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             headers["privatekey"] = privatekey;
             headers["apikey"] = apikey;
             var payment =   function (){
-                return  fetch("https://cms.epayco.io/checkout/payment/session", {
+                return  fetch("https://cms.epayco.co/checkout/payment/session", {
                     method: "POST",
                     body: JSON.stringify(info),
                     headers
@@ -533,10 +535,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     error.message;
                 });
         }
-	    //openChekout()
-	    console.log(data)
-		jQuery("#btn_epayco").click(function(){
-		  openChekout()
+		jQuery("#btn_epayco_new").click(function(){
+		  console.log("epayco")
 		});
 		'
 		);
@@ -672,7 +672,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 
             }
 
-            $url = 'https://secure.epayco.io/validation/v1/reference/'.$ref_payco;
+            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
             $response = wp_remote_get(  $url );
             $body = wp_remote_retrieve_body( $response );
             $jsonData = @json_decode($body, true);
@@ -1178,7 +1178,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
     {
         $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
         $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
-        $response = wp_remote_post( 'https://apify.epayco.io/login', array(
+        $response = wp_remote_post( 'https://apify.epayco.co/login', array(
             'headers' => array(
                 'Authorization' => 'Basic ' . base64_encode( $username . ':' . $password ),
             ),
