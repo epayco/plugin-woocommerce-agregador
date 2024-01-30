@@ -457,13 +457,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     }
                     const apiKey = "%s";
                     const privateKey = "%s";
-                    var openChekout = function () {
-                        //handler.open(data);
-                        openNewChekout()
-                    }
-                    var bntPagar = document.getElementById("btn_epayco");
-                    bntPagar.addEventListener("click", openChekout);
-            	    openChekout()
                     var openNewChekout = function () {
                         if(localStorage.getItem("invoicePayment") == null){
                             localStorage.setItem("invoicePayment", data.invoice);
@@ -507,6 +500,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                                 error.message;
                             });
                     }
+                    var openChekout = function () {
+                        //handler.open(data);
+                        openNewChekout()
+                    }
+                    var bntPagar = document.getElementById("btn_epayco");
+                    bntPagar.addEventListener("click", openChekout);
+            	    openChekout()    
                 </script>
                 </form>
                 </center>
@@ -572,7 +572,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     <br><small class="epayco-subtitle"> ' . esc_html__( 'Si no se cargan automáticamente, haga clic en el botón "Pagar con ePayco"', 'woo-epayco-agregador' ) . '</small>
                 </p>';
 
-        if ($this->epayco_agregador_lang !== "es") {
+        if ($this->epayco_agregador_lang === "2") {
             $epaycoButtonImage = 'https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color-Ingles.png';
         }else{
             $epaycoButtonImage = 'https://multimedia.epayco.co/epayco-landing/btns/Boton-epayco-color1.png';
