@@ -476,7 +476,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         headers["privatekey"] = privatekey;
                         headers["apikey"] = apikey;
                         var payment =   function (){
-                            return  fetch("https://apify.epayco.io/checkout/payment/session", {
+                            return  fetch("https://cms.epayco.io/checkout/payment/session", {
                                 method: "POST",
                                 body: JSON.stringify(info),
                                 headers
