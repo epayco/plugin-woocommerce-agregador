@@ -423,7 +423,19 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             EpaycoOrderAgregador::create($order_id,1);
             $this->restore_order_stock($order->get_id(),"decrease");
         }
-
+        if($current_state != "on-hold"){
+            $order->update_status("on-hold");
+            if($current_state == "epayco_agregador_failed" ||
+                $current_state == "epayco_agregador_cancelled" ||
+                $current_state == "failed" ||
+                $current_state == "epayco-cancelled" ||
+                $current_state == "epayco-failed"
+            ){
+                $this->restore_order_stock($order->get_id(),"decrease");
+            }else{
+                $this->restore_order_stock($order->get_id());
+            }
+        }
         echo sprintf('
                     <script
                        src="https://checkout.epayco.co/checkout.js">
