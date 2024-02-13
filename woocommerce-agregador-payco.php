@@ -6,7 +6,7 @@
  *
  * Plugin Name: WooCommerce Epayco Agregador
  * Description: Plugin ePayco Agregador for WooCommerce.
- * Version: 7.0.0
+ * Version: 7.2.0
  * Author: ePayco
  * Author URI: http://epayco.co
  * Tested up to: 6.4
