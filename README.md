@@ -6,6 +6,7 @@
 
 | Versión | URL de repositorio | Versión compatible con Woocommerce | ¿Incluye soporte de ePayco? |
 | :---:   | :---:     | :---:    | :---:    |
+| 8.0.0   | [ePayco plugin WooCommerce v8.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.0)     | 8.0.0 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.0)    |
 | 7.2.0   | [ePayco plugin WooCommerce v7.2.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.2.0)     | 7.0.0 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)    |
 | 7.1.0   | [ePayco plugin WooCommerce v7.1.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.1.0)     | 7.0.0 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)    |
 | 7.0.0   | [ePayco plugin WooCommerce v7.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)     | 6.6.0 o superior   | [![](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60)](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)    |
@@ -54,7 +55,7 @@
 8. Selecciona o crea una página de respuesta donde el usuario será devuelto después de finalizar la compra.
 9. Realiza una o varias compras para comprobar que todo esté bien.
 10. Si todo está bien recuerda cambiar la variable Modo Prueba a NO y empieza a recibir pagos de forma instantánea y segura con ePayco.
-
+11. Split: en los datos del producto encontrara la sesion de Receivers, donde configura con el P_CUST_ID y el valor en porcentaje del producto
 
 ## Pasos
 
@@ -66,5 +67,4 @@
 <img src="ImgTutorialWooCommerce/tuto-6.png" width="400px"/>
 <img src="ImgTutorialWooCommerce/tuto-7.png" width="400px"/>
 <img src="ImgTutorialWooCommerce/tuto-8.png" width="400px"/>
-
-
+<img src="ImgTutorialWooCommerce/tuto-9.png" width="400px"/>
