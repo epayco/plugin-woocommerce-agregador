@@ -15,7 +15,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 	public function __construct() {
 
 		$this->id                   = 'epayco_agregador';
-        $this->version = '8.0.0';
+        $this->version = '8.0.1';
 		$logo_url = $this->get_option( 'logo' );
 		if ( ! empty( $logo_url ) ) {
 			$logo_url   = $this->get_option( 'logo' );
@@ -756,6 +756,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                                         external: external,
                                     });
                                     handlerNew.openNew()
+                                }else{
+                                    handler.open(data);
                                 }
                             })
                             .catch(error => {
@@ -763,7 +765,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             });
                     }
                     var openChekout = function () {
-                        //handler.open(data);
                         openNewChekout()
                     }
                     var bntPagar = document.getElementById("btn_epayco");
