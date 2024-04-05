@@ -491,19 +491,19 @@ function my_custom_checkout_field_display_admin_order_meta_agregador( $order ){
         && null !== get_post_meta( $order_id, 'franquicia_agregador', true ) && null !== get_post_meta( $order_id, 'autorizacion_agregador', true )
      ){
           echo '<br>
-    <h3>Detalle de la transacci車n</h3>
+    <h3>Detalle de la transacción</h3>
     <div>
         <div class="order_data_column_container">
             <div class="order_data_column">
                 <div class="address">    
                     <p><strong>'.__('Modo').':</strong> ' . get_post_meta( $order_id, 'modo_agregador', true ) . '</p>
-                    <p><strong>'.__('Fecha y hora transacci車n').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
+                    <p><strong>'.__('Fecha y hora transacción').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
                 </div>
             </div>
             <div class="order_data_column">
                 <div class="address">    
                     <p><strong>'.__('Franquicia/Medio de pago').':</strong> ' . get_post_meta( $order_id, 'franquicia_agregador', true ) . '</p>
-                    <p><strong>'.__('C車digo de autorizaci車n').':</strong> ' . get_post_meta( $order_id, 'autorizacion_agregador', true ) . '</p>
+                    <p><strong>'.__('Código de autorización').':</strong> ' . get_post_meta( $order_id, 'autorizacion_agregador', true ) . '</p>
                 </div>
             </div>
         </div>
