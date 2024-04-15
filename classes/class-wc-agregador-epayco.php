@@ -671,6 +671,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         test: "%s"
                     })
                     var date = new Date().getTime();
+                    var bntPagar = document.getElementById("btn_epayco");
                     var data = {
                         name: "%s",
                         description: "%s",
@@ -748,6 +749,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         }
                         payment()
                             .then(session => {
+                                bntPagar.style.pointerEvents = "all";
                                 if(session.data.sessionId != undefined){
                                     localStorage.removeItem("sessionPayment");
                                     localStorage.setItem("sessionPayment", session.data.sessionId);
@@ -765,9 +767,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             });
                     }
                     var openChekout = function () {
+                        bntPagar.style.pointerEvents = "none";
                         openNewChekout()
                     }
-                    var bntPagar = document.getElementById("btn_epayco");
                     bntPagar.addEventListener("click", openChekout);
             	    openChekout()    
                 </script>
