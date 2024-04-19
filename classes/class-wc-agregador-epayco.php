@@ -15,7 +15,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 	public function __construct() {
 
 		$this->id                   = 'epayco_agregador';
-        $this->version = '8.0.1';
+        $this->version = '8.0.2';
 		$logo_url = $this->get_option( 'logo' );
 		if ( ! empty( $logo_url ) ) {
 			$logo_url   = $this->get_option( 'logo' );
@@ -671,6 +671,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         test: "%s"
                     })
                     var date = new Date().getTime();
+                    var bntPagar = document.getElementById("btn_epayco");
                     var data = {
                         name: "%s",
                         description: "%s",
@@ -748,6 +749,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         }
                         payment()
                             .then(session => {
+                                bntPagar.style.pointerEvents = "all";
                                 if(session.data.sessionId != undefined){
                                     localStorage.removeItem("sessionPayment");
                                     localStorage.setItem("sessionPayment", session.data.sessionId);
@@ -765,9 +767,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             });
                     }
                     var openChekout = function () {
+                        bntPagar.style.pointerEvents = "none";
                         openNewChekout()
                     }
-                    var bntPagar = document.getElementById("btn_epayco");
                     bntPagar.addEventListener("click", openChekout);
             	    openChekout()    
                 </script>
@@ -906,6 +908,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             $x_test_request = trim(sanitize_text_field($_REQUEST['x_test_request']));
             $x_approval_code = trim(sanitize_text_field($_REQUEST['x_approval_code']));
             $x_franchise = trim(sanitize_text_field($_REQUEST['x_franchise']));
+            $x_fecha_transaccion = trim(sanitize_text_field($_REQUEST['x_fecha_transaccion']));
         }else{
             $ref_payco = sanitize_text_field($_REQUEST['ref_payco']);
             if(empty($ref_payco)){
@@ -954,6 +957,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             $x_test_request = trim($validationData['x_test_request']);
             $x_approval_code = trim($validationData['x_approval_code']);
             $x_franchise = trim($validationData['x_franchise']);
+            $x_fecha_transaccion = trim($validationData['x_fecha_transaccion']);
         }
 
         // Validamos la firma
@@ -993,7 +997,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             switch ($x_cod_transaction_state) {
                 case 1: {
                     if($isTestMode=="true"){
-                        $message = 'Pago exitoso Prueba';
+                        $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                        update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
+                        update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                        update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                        update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                         switch ($this->epayco_agregador_endorder_state ){
                             case 'epayco-processing':{
                                 $orderStatus ='epayco_agregador_processing';
@@ -1009,7 +1017,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             }break;
                         }
                     }else{
-                        $message = 'Pago exitoso';
+                        $message = "Modo:Producción, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                        update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                        update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                        update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                        update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                         $orderStatus = $this->epayco_agregador_endorder_state;
                     }
 
@@ -1033,7 +1045,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 
                                 $order->payment_complete($x_ref_payco);
                                 $order->update_status($orderStatus);
-                                $order->add_order_note($message);
+                                //$order->add_order_note($message);
                             }
                         }
 
@@ -1063,18 +1075,28 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             }
                             $order->payment_complete($x_ref_payco);
                             $order->update_status($orderStatus);
-                            $order->add_order_note($message);
+                            //$order->add_order_note($message);
                         }
                     }
                     echo "1";
                 } break;
-                case 2: {
+                case 2: 
+                case 4:
+                case 10:
+                case 11:    
+                    {
                     if($isTestMode=="true"){
                         if(
                             $current_state == "epayco_agregador_processing" ||
                             $current_state == "epayco_agregador_completed" ||
                             $current_state == "processing_test" ||
-                            $current_state == "completed_test"
+                            $current_state == "completed_test" ||
+                            $current_state == "epayco-processing" ||
+                            $current_state == "epayco-completed" ||
+                            $current_state == "processing-test" ||
+                            $current_state == "completed-test"||
+                            $current_state == "processing" ||
+                            $current_state == "completed"
                         ){}else{
                             switch ($this->epayco_agregador_cancelled_endorder_state ){
                                 case 'epayco-cancelled':{
@@ -1090,19 +1112,27 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                                     $orderStatus ='failed';
                                 }break;
                             }
-                            $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
+                            $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                            update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
+                            update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                            update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                            update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                             $messageClass = 'woocommerce-error';
                             if($current_state =="epayco-cancelled"||
                                 $current_state == $orderStatus ){
                             }else{
                                 if($current_state =="on-hold"){
                                     $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
+                                    //$order->add_order_note($message);
                                 }
                             }
                         }
                     }else{
                         if(
+                            $current_state == "epayco_agregador_processing" ||
+                            $current_state == "epayco_agregador_completed" ||
+                            $current_state == "processing_test" ||
+                            $current_state == "completed_test" ||
                             $current_state == "epayco-processing" ||
                             $current_state == "epayco-completed" ||
                             $current_state == "processing-test" ||
@@ -1110,11 +1140,15 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             $current_state == "processing" ||
                             $current_state == "completed"
                         ){}else{
-                            $message = 'Pago rechazado: ' .$x_ref_payco;
+                            $message = "Modo:Producción, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                            update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                            update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                            update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                            update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                             $messageClass = 'woocommerce-error';      
                             if($current_state =="on-hold"){
                                 $order->update_status($this->epayco_agregador_cancelled_endorder_state);
-                                $order->add_order_note($message);
+                                //$order->add_order_note($message);
                             }
                         }
                     }
@@ -1131,83 +1165,34 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         exit();
                     }
                 } break;
-                case 3: {
+                case 3: 
+                case 7:    
+                    {
 
                     //Busca si ya se restauro el stock y si se configuro reducir el stock en transacciones pendientes
                     if (!EpaycoOrderAgregador::ifStockDiscount($order_id) && $this->get_option('epayco_agregador_reduce_stock_pending') != 'yes') {
                         //actualizar el stock
                         EpaycoOrderAgregador::updateStockDiscount($order_id,1);
                     }
+                    if($isTestMode=="true"){
+                        $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                        update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
+                        update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                        update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                        update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                    }else{
+                        update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                        update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                        update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                        update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                    }
                     $message = 'Pago pendiente de aprobación';
                     $orderStatus = "on-hold";
                     if($current_state != $orderStatus){
                         $order->update_status($orderStatus);
-                        $order->add_order_note($message);
+                        //$order->add_order_note($message);
                     }
                     echo "3";
-                } break;
-                case 4: {
-                    if($isTestMode=="true"){
-                        if(
-                            $current_state == "epayco_agregador_processing" ||
-                            $current_state == "epayco_agregador_completed" ||
-                            $current_state == "processing_test" ||
-                            $current_state == "completed_test"
-                        ){}else{
-                            switch ($this->epayco_agregador_cancelled_endorder_state ){
-                                case 'epayco-cancelled':{
-                                    $orderStatus ='epayco_agregador_cancelled';
-                                }break;
-                                case 'epayco-failed':{
-                                    $orderStatus ='epayco_agregador_failed';
-                                }break;
-                                case 'cancelled':{
-                                    $orderStatus ='cancelled';
-                                }break;
-                                case 'failed':{
-                                    $orderStatus ='failed';
-                                }break;
-                            }
-                            $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error';
-                            if($current_state =="epayco-cancelled"||
-                                $current_state == $orderStatus ){
-                            }else{
-                                if($current_state =="on-hold"){
-                                    $order->update_status($orderStatus);
-                                    $order->add_order_note($message);
-                                }
-                            }
-                        }
-                    }else{    
-                        if(
-                            $current_state == "epayco-processing" ||
-                            $current_state == "epayco-completed" ||
-                            $current_state == "processing-test" ||
-                            $current_state == "completed-test"||
-                            $current_state == "processing" ||
-                            $current_state == "completed"
-                        ){}else{
-                            $message = 'Pago rechazado: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error'; 
-                            if($current_state =="on-hold"){
-                                $order->update_status($this->epayco_agregador_cancelled_endorder_state);
-                                $order->add_order_note($message);
-                            }
-                        }
-                    }
-                    echo "4";
-                    if(!$isConfirmation && $clear_cart){
-                        $woocommerce->cart->empty_cart();
-                        foreach ($order->get_items() as $item) {
-                            // Get an instance of corresponding the WC_Product object
-                            $product_id = $item->get_product()->id;
-                            $qty = $item->get_quantity(); // Get the item quantity
-                            WC()->cart->add_to_cart( $product_id ,(int)$qty);
-                        }
-                        wp_safe_redirect( wc_get_checkout_url() );
-                        exit();
-                    }
                 } break;
                 case 6: {
                     $message = 'Pago Reversada' .$x_ref_payco;
@@ -1217,114 +1202,19 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     $this->restore_order_stock($order->get_id());
                     echo "6";
                 } break;
-                case 10:{
-                    if($isTestMode=="true"){
-                        if(
-                            $current_state == "epayco_agregador_processing" ||
-                            $current_state == "epayco_agregador_completed" ||
-                            $current_state == "processing_test" ||
-                            $current_state == "completed_test"
-                        ){}else{
-                            $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error';
-                            $order->update_status('epayco_agregador_cancelled');
-                            $order->add_order_note($message);
-                            if($current_state =="epayco-cancelled"||
-                                $current_state == "epayco_agregador_cancelled" ){
-                            }else{
-                                $this->restore_order_stock($order->get_id());
-                            }
-                        }
-                    }else{
-                        if(
-                            $current_state == "epayco-processing" ||
-                            $current_state == "epayco-completed" ||
-                            $current_state == "processing-test" ||
-                            $current_state == "completed-test"||
-                            $current_state == "processing" ||
-                            $current_state == "completed"
-                        ){}else{
-                            $message = 'Pago rechazado: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error';
-                            $order->update_status('epayco-cancelled');
-                            $order->add_order_note($message);
-                            if($current_state !="epayco-cancelled"){
-                                $this->restore_order_stock($order->get_id());
-                            }
-                        }
-                    }
-                    echo "10";
-                    if(!$isConfirmation && $clear_cart){
-                        $woocommerce->cart->empty_cart();
-                        foreach ($order->get_items() as $item) {
-                            // Get an instance of corresponding the WC_Product object
-                            $product_id = $item->get_product()->id;
-                            $qty = $item->get_quantity(); // Get the item quantity
-                            WC()->cart->add_to_cart( $product_id ,(int)$qty);
-                        }
-                        wp_safe_redirect( wc_get_checkout_url() );
-                        exit();
-                    }
-                } break;
-                case 11:{
-                    if($isTestMode=="true"){
-                        if(
-                            $current_state == "epayco_agregador_processing" ||
-                            $current_state == "epayco_agregador_completed" ||
-                            $current_state == "processing_test" ||
-                            $current_state == "completed_test"
-                        ){}else{
-                            $message = 'Pago rechazado Prueba: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error';
-                            $order->update_status('epayco_agregador_cancelled');
-                            $order->add_order_note($message);
-                            if($current_state =="epayco-cancelled"||
-                                $current_state == "epayco_agregador_cancelled" ){
-                            }else{
-                                if($current_state != "epayco-failed"){
-                                    $this->restore_order_stock($order->get_id());
-                                }
-                            }
-                        }
-                    }else{
-                        if(
-                            $current_state == "epayco-processing" ||
-                            $current_state == "epayco_agregador_processing" ||
-                            $current_state == "epayco-completed" ||
-                            $current_state == "epayco_agregador_completed" ||
-                            $current_state == "processing-test" ||
-                            $current_state == "completed-test"||
-                            $current_state == "processing" ||
-                            $current_state == "completed"
-                        ){}else{
-                            $message = 'Pago rechazado: ' .$x_ref_payco;
-                            $messageClass = 'woocommerce-error';
-                            $order->update_status('epayco-cancelled');
-                            $order->add_order_note($message);
-                            if($current_state !="epayco-cancelled" && $current_state != "epayco-failed"){
-                                $this->restore_order_stock($order->get_id());
-                            }
-                        }
-                    }
-                    echo "11";
-                    if(!$isConfirmation && $clear_cart){
-                        $woocommerce->cart->empty_cart();
-                        foreach ($order->get_items() as $item) {
-                            // Get an instance of corresponding the WC_Product object
-                            $product_id = $item->get_product()->id;
-                            $qty = $item->get_quantity(); // Get the item quantity
-                            WC()->cart->add_to_cart( $product_id ,(int)$qty);
-                        }
-                        wp_safe_redirect( wc_get_checkout_url() );
-                        exit();
-                    }
-                } break;
                 default: {
                     if(
+                        $current_state == "epayco_agregador_processing" ||
+                        $current_state == "epayco_agregador_completed" ||
+                        $current_state == "processing_test" ||
+                        $current_state == "completed_test" ||
                         $current_state == "epayco-processing" ||
                         $current_state == "epayco-completed" ||
+                        $current_state == "processing-test" ||
+                        $current_state == "completed-test"||
                         $current_state == "processing" ||
-                        $current_state == "completed"){
+                        $current_state == "completed"
+                        ){
                     } else{
                         $message = 'Pago '.sanitize_text_field($_REQUEST['x_transaction_state']) . $x_ref_payco;
                         $messageClass = 'woocommerce-error';
@@ -1376,8 +1266,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 
             }else{
                 if(
+                    $current_state == "epayco_agregador_processing" ||
+                    $current_state == "epayco_agregador_completed" ||
+                    $current_state == "processing_test" ||
+                    $current_state == "completed_test" ||
                     $current_state == "epayco-processing" ||
                     $current_state == "epayco-completed" ||
+                    $current_state == "processing-test" ||
+                    $current_state == "completed-test"||
                     $current_state == "processing" ||
                     $current_state == "completed"){
                 }else{
