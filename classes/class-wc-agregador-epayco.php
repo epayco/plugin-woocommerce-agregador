@@ -15,7 +15,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 	public function __construct() {
 
 		$this->id                   = 'epayco_agregador';
-        $this->version = '8.0.1';
+        $this->version = '8.0.2';
 		$logo_url = $this->get_option( 'logo' );
 		if ( ! empty( $logo_url ) ) {
 			$logo_url   = $this->get_option( 'logo' );
@@ -647,19 +647,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             EpaycoOrderAgregador::create($order_id,1);
             $this->restore_order_stock($order->get_id(),"decrease");
         }
+        $orderStatus = "pending";
         $current_state = $order->get_status();
-        if($current_state != "on-hold"){
-            $order->update_status("on-hold");
-            if($current_state == "epayco_agregador_failed" ||
-                $current_state == "epayco_agregador_cancelled" ||
-                $current_state == "failed" ||
-                $current_state == "epayco-cancelled" ||
-                $current_state == "epayco-failed"
-            ){
-                $this->restore_order_stock($order->get_id(),"decrease");
-            }else{
-                $this->restore_order_stock($order->get_id());
-            }
+        if($current_state != $orderStatus){
+            $order->update_status($orderStatus);
+            $this->restore_order_stock($order->get_id(),"decrease");
         }
         echo sprintf('
                     <div hidden id="split">'.$split.'</div>  
@@ -1121,7 +1113,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             if($current_state =="epayco-cancelled"||
                                 $current_state == $orderStatus ){
                             }else{
-                                if($current_state =="on-hold"){
+                                if($current_state =="pending"){
                                     $order->update_status($orderStatus);
                                     //$order->add_order_note($message);
                                 }
@@ -1146,7 +1138,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
                             update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                             $messageClass = 'woocommerce-error';      
-                            if($current_state =="on-hold"){
+                            if($current_state =="pending"){
                                 $order->update_status($this->epayco_agregador_cancelled_endorder_state);
                                 //$order->add_order_note($message);
                             }
@@ -1187,7 +1179,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                     }
                     $message = 'Pago pendiente de aprobación';
-                    $orderStatus = "on-hold";
+                    $orderStatus = "pending";
                     if($current_state != $orderStatus){
                         $order->update_status($orderStatus);
                         //$order->add_order_note($message);
@@ -1227,7 +1219,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             }
 
             //validar si la transaccion esta pendiente y pasa a rechazada y ya habia descontado el stock
-            if($current_state == 'on-hold' && ((int)$x_cod_transaction_state == 2 || (int)$x_cod_transaction_state == 4) && EpaycoOrderAgregador::ifStockDiscount($order_id)){
+            if($current_state == 'pending' && ((int)$x_cod_transaction_state == 2 || (int)$x_cod_transaction_state == 4) && EpaycoOrderAgregador::ifStockDiscount($order_id)){
                 //si no se restauro el stock restaurarlo inmediatamente
                 $this->restore_order_stock($order_id);
             };
