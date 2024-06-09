@@ -1115,6 +1115,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                             }else{
                                 if($current_state =="pending"){
                                     $order->update_status($orderStatus);
+                                    $this->restore_order_stock($order->get_id(),"increase");
                                     //$order->add_order_note($message);
                                 }
                             }
@@ -1182,7 +1183,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     $orderStatus = "pending";
                     if($current_state != $orderStatus){
                         $order->update_status($orderStatus);
-                        //$order->add_order_note($message);
+                        if($current_state == "epayco_failed" ||
+                                $current_state == "epayco_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                            ){
+                                $this->restore_order_stock($order->get_id(),"decrease");
+                            }
                     }
                     echo "3";
                 } break;
