@@ -1183,12 +1183,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     $orderStatus = "pending";
                     if($current_state != $orderStatus){
                         $order->update_status($orderStatus);
-                        if($current_state == "epayco_failed" ||
-                                $current_state == "epayco_cancelled" ||
-                                $current_state == "failed" ||
-                                $current_state == "epayco-cancelled" ||
-                                $current_state == "epayco-failed"
-                            ){
+                        if($current_state == "epayco_agregador_failed" ||
+                           $current_state == "epayco_agregador_cancelled" ||
+                           $current_state == "failed" ||
+                           $current_state == "epayco-cancelled" ||
+                           $current_state == "epayco-failed"
+                    	   ){
                                 $this->restore_order_stock($order->get_id(),"decrease");
                             }
                     }
