@@ -966,8 +966,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
         $isTestMode = get_option('epayco_agregador_order_status') == "yes" ? "true" : "false";
         $isTestPluginMode = $this->epayco_agregador_testmode;
         $x_approval_code_value = intval($x_approval_code);
-        $validation = true;
-        /*if(floatval($order->get_total()) == floatval($x_amount)){
+        if(floatval($order->get_total()) == floatval($x_amount)){
             if("yes" == $isTestPluginMode){
                 $validation = true;
             }
@@ -985,7 +984,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             }
         }else{
             $validation = false;
-        }*/
+        }
         if($authSignature == $x_signature && $validation){
             switch ($x_cod_transaction_state) {
                 case 1: {
