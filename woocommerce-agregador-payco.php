@@ -496,13 +496,18 @@ function my_custom_checkout_field_display_admin_order_meta_agregador( $order ){
         <div class="order_data_column_container">
             <div class="order_data_column">
                 <div class="address">    
+                    <p><strong>'.__(' Pago con ePayco').':</strong> ' . get_post_meta( $order_id, 'refPayco_agregador', true ) . '</p>
                     <p><strong>'.__('Modo').':</strong> ' . get_post_meta( $order_id, 'modo_agregador', true ) . '</p>
-                    <p><strong>'.__('Fecha y hora transacción').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
                 </div>
             </div>
             <div class="order_data_column">
                 <div class="address">    
+                    <p><strong>'.__('Fecha y hora transacción').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
                     <p><strong>'.__('Franquicia/Medio de pago').':</strong> ' . get_post_meta( $order_id, 'franquicia_agregador', true ) . '</p>
+                </div>
+            </div>
+            <div class="order_data_column">
+                <div class="address">    
                     <p><strong>'.__('Código de autorización').':</strong> ' . get_post_meta( $order_id, 'autorizacion_agregador', true ) . '</p>
                 </div>
             </div>
