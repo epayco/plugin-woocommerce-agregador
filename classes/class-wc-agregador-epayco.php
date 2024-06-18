@@ -289,8 +289,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                 'css' =>'line-height: inherit',
                 'description' => __( 'Seleccione el estado del pedido que se aplicará cuando la transacciónes Cancelada o Rechazada', 'woo-epayco-agregador' ),
                 'options' => array(
-                    'epayco-cancelled'=> __( 'ePayco Pago Cancelado', 'woo-epayco-agregador' ),
-                    "epayco-failed"=> __( 'ePayco Pago Fallido', 'woo-epayco-agregador' ),
+                    'epayco_agregador-cancelled'=> __( 'ePayco Pago Cancelado', 'woo-epayco-agregador' ),
+                    "epayco_agregador-failed"=> __( 'ePayco Pago Fallido', 'woo-epayco-agregador' ),
                     'cancelled'=> __( 'Cancelado', 'woo-epayco-agregador' ),
                     "failed"=> __( 'Fallido', 'woo-epayco-agregador' )
                 ),
@@ -991,6 +991,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                 case 1: {
                     if($isTestMode=="true"){
                         $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                        update_post_meta( $order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
                         update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
                         update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                         update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -1011,6 +1012,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         }
                     }else{
                         $message = "Modo:Producción, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                        update_post_meta( $order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
                         update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
                         update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                         update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -1021,6 +1023,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     if($current_state == "epayco_agregador_failed" ||
                         $current_state == "epayco_agregador_cancelled" ||
                         $current_state == "failed" ||
+                        $current_state == "cancelled" ||
                         $current_state == "epayco-cancelled" ||
                         $current_state == "epayco-failed"
                     ){
@@ -1078,8 +1081,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                 case 10:
                 case 11:
                     {
-                        if($isTestMode=="true"){
-                            if(
+                        if(
                                 $current_state == "epayco_agregador_processing" ||
                                 $current_state == "epayco_agregador_completed" ||
                                 $current_state == "processing_test" ||
@@ -1091,69 +1093,31 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                                 $current_state == "processing" ||
                                 $current_state == "completed"
                             ){}else{
-                                switch ($this->epayco_agregador_cancelled_endorder_state ){
-                                    case 'epayco-cancelled':{
-                                        $orderStatus ='epayco_agregador_cancelled';
-                                    }break;
-                                    case 'epayco-failed':{
-                                        $orderStatus ='epayco_agregador_failed';
-                                    }break;
-                                    case 'cancelled':{
-                                        $orderStatus ='cancelled';
-                                    }break;
-                                    case 'failed':{
-                                        $orderStatus ='failed';
-                                    }break;
-                                }
-                                $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
-                                update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
-                                update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
-                                update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
-                                update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
-                                $messageClass = 'woocommerce-error';
-                                if($current_state =="epayco-cancelled"||
-                                    $current_state == $orderStatus ){
+                                if($isTestMode=="true"){
+                                    $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                                     update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Pruebas'));
+                                    
                                 }else{
-                                    if($current_state =="pending"){
-                                        $order->update_status($orderStatus);
-                                        $this->restore_order_stock($order->get_id(),"increase");
-                                        //$order->add_order_note($message);
-                                    }
-                                    if($current_state =="on-hold"){
-                                        $order->update_status($orderStatus);
-                                    }
+                                     $message = "Modo:Producción, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                                     update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
                                 }
-                            }
-                        }else{
-                            if(
-                                $current_state == "epayco_agregador_processing" ||
-                                $current_state == "epayco_agregador_completed" ||
-                                $current_state == "processing_test" ||
-                                $current_state == "completed_test" ||
-                                $current_state == "epayco-processing" ||
-                                $current_state == "epayco-completed" ||
-                                $current_state == "processing-test" ||
-                                $current_state == "completed-test"||
-                                $current_state == "processing" ||
-                                $current_state == "completed"
-                            ){}else{
-                                $message = "Modo:Producción, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
-                                update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                                update_post_meta( $order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
                                 update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
                                 update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                                 $messageClass = 'woocommerce-error';
+                                
                                 if($current_state =="pending"){
-                                    $order->update_status($this->epayco_agregador_cancelled_endorder_state);
-                                    $this->restore_order_stock($order->get_id(),"increase");
+                                    $order->update_status('cancelled');
+                                    //$this->restore_order_stock($order->get_id(),"increase");
                                     //$order->add_order_note($message);
                                 }
                                 if($current_state =="on-hold"){
-                                    $order->update_status($this->epayco_agregador_cancelled_endorder_state);
+                                    $order->update_status('cancelled');
                                     //$order->add_order_note($message);
                                 }
                             }
-                        }
+                        
                         echo "2";
                         if(!$isConfirmation && $clear_cart){
                             $woocommerce->cart->empty_cart();
@@ -1178,11 +1142,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         }
                         if($isTestMode=="true"){
                             $message = "Modo:pruebas, \nref_payco: ".$x_ref_payco." \nFecha y hora transacción: ".$x_fecha_transaccion." \nFranquicia/Medio de pago: ".$x_franchise. " \nCódigo de autorización: ".$x_approval_code;
+                            update_post_meta( $order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
                             update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('pruebas'));
                             update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                             update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
                             update_post_meta( $order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                         }else{
+                            update_post_meta( $order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
                             update_post_meta( $order->get_id(), 'modo_agregador', esc_attr('Producción'));
                             update_post_meta( $order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                             update_post_meta( $order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -1192,6 +1158,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         $orderStatus = "on-hold";
                         if($current_state != $orderStatus){
                             $order->update_status($orderStatus);
+                            //$order->add_order_note($message);
                             /*if($current_state == "epayco_agregador_failed" ||
                                 $current_state == "epayco_agregador_cancelled" ||
                                 $current_state == "failed" ||
@@ -1263,6 +1230,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                     if($current_state == "epayco_agregador_failed" ||
                         $current_state == "epayco_agregador_cancelled" ||
                         $current_state == "failed" ||
+                        $current_state == "cancelled" ||
                         $current_state == "epayco-cancelled" ||
                         $current_state == "epayco-failed"
                     ){}else{
@@ -1292,6 +1260,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
                         if($current_state == "epayco_agregador_failed" ||
                             $current_state == "epayco_agregador_cancelled" ||
                             $current_state == "failed" ||
+                            $current_state == "cancelled" ||
                             $current_state == "epayco-cancelled" ||
                             $current_state == "epayco-failed"
                         ){}else{
