@@ -120,7 +120,7 @@ function epayco_agregador_update_db_check()
 }
 add_action('plugins_loaded', 'epayco_agregador_update_db_check');
 function register_epayco_agregador_order_status() {
-    register_post_status( 'wc-epayco-failed', array(
+    register_post_status( 'wc-epayco_agregador-failed', array(
         'label'                     => 'ePayco Pago Fallido',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -138,7 +138,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>', 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-cancelled', array(
+    register_post_status( 'wc-epayco_agregador-cancelled', array(
         'label'                     => 'ePayco Pago Cancelado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -156,7 +156,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>', 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-on-hold', array(
+    register_post_status( 'wc-epayco_agregador-on-hold', array(
         'label'                     => 'ePayco Pago Pendiente',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -174,7 +174,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>', 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-processing', array(
+    register_post_status( 'wc-epayco_agregador-processing', array(
         'label'                     => 'ePayco Procesando Pago',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -210,7 +210,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'Procesando Prueba<span class="count">(%s)</span>', 'Procesando Prueba<span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-completed', array(
+    register_post_status( 'wc-epayco_agregador-completed', array(
         'label'                     => 'ePayco Pago Completado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
