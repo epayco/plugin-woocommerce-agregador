@@ -6,7 +6,7 @@
  *
  * Plugin Name: WooCommerce Epayco Agregador
  * Description: Plugin ePayco Agregador for WooCommerce.
- * Version: 8.0.2
+ * Version: 8.0.3
  * Author: ePayco
  * Author URI: http://epayco.co
  * Tested up to: 6.4
@@ -120,7 +120,7 @@ function epayco_agregador_update_db_check()
 }
 add_action('plugins_loaded', 'epayco_agregador_update_db_check');
 function register_epayco_agregador_order_status() {
-    register_post_status( 'wc-epayco-failed', array(
+    register_post_status( 'wc-epayco_agregador-failed', array(
         'label'                     => 'ePayco Pago Fallido',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -138,7 +138,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>', 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-cancelled', array(
+    register_post_status( 'wc-epayco_agregador-cancelled', array(
         'label'                     => 'ePayco Pago Cancelado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -156,7 +156,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>', 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-on-hold', array(
+    register_post_status( 'wc-epayco_agregador-on-hold', array(
         'label'                     => 'ePayco Pago Pendiente',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -174,7 +174,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>', 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-processing', array(
+    register_post_status( 'wc-epayco_agregador-processing', array(
         'label'                     => 'ePayco Procesando Pago',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -210,7 +210,7 @@ function register_epayco_agregador_order_status() {
         'label_count'               => _n_noop( 'Procesando Prueba<span class="count">(%s)</span>', 'Procesando Prueba<span class="count">(%s)</span>' )
     ));
 
-    register_post_status( 'wc-epayco-completed', array(
+    register_post_status( 'wc-epayco_agregador-completed', array(
         'label'                     => 'ePayco Pago Completado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
@@ -496,13 +496,18 @@ function my_custom_checkout_field_display_admin_order_meta_agregador( $order ){
         <div class="order_data_column_container">
             <div class="order_data_column">
                 <div class="address">    
+                    <p><strong>'.__('Pago con ePayco').':</strong> ' . get_post_meta( $order_id, 'refPayco_agregador', true ) . '</p>
                     <p><strong>'.__('Modo').':</strong> ' . get_post_meta( $order_id, 'modo_agregador', true ) . '</p>
-                    <p><strong>'.__('Fecha y hora transacción').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
                 </div>
             </div>
             <div class="order_data_column">
                 <div class="address">    
+                    <p><strong>'.__('Fecha y hora transacción').':</strong> ' . get_post_meta( $order_id, 'fecha_agregador', true ) . '</p>
                     <p><strong>'.__('Franquicia/Medio de pago').':</strong> ' . get_post_meta( $order_id, 'franquicia_agregador', true ) . '</p>
+                </div>
+            </div>
+            <div class="order_data_column">
+                <div class="address">    
                     <p><strong>'.__('Código de autorización').':</strong> ' . get_post_meta( $order_id, 'autorizacion_agregador', true ) . '</p>
                 </div>
             </div>
