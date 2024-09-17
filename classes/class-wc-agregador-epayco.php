@@ -21,7 +21,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
             $logo_url   = $this->get_option( 'logo' );
             $this->icon = apply_filters( 'woocommerce_' . $this->id . '_icon', $logo_url );
         } else {
-            $this->icon = apply_filters( 'woocommerce_' . $this->id . '_icon', EPAYCO_AGREGADOR_PLUGIN_URL . 'assets/images/epayco1.png' );
+            $this->icon = apply_filters( 'woocommerce_' . $this->id . '_icon', EPAYCO_AGREGADOR_PLUGIN_URL . 'assets/images/epayco1.svg' );
         }
         $this->method_title         = __( 'ePayco Checkout', 'woo-epayco-agregador' );
         $this->method_description   = __( 'Acepta tarjetas de credito, depositos y transferencias.', 'woo-epayco-agregador' );
@@ -1333,7 +1333,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway {
 
     function string_sanitize($string, $force_lowercase = true, $anal = false) {
 
-        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]","}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;","â€”", "â€“", ",", "<", ".", ">", "/", "?");
+        $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "_", "=", "+", "[", "{", "]","}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;","â€”", "â€“", "<", ">", "/", "?");
         $clean = trim(str_replace($strip, "", strip_tags($string)));
         $clean = preg_replace('/\s+/', "_", $clean);
         $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9]/", "", $clean) : $clean ;
