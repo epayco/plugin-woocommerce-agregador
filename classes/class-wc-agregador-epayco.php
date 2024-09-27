@@ -17,7 +17,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
     {
 
         $this->id                   = 'epayco_agregador';
-        $this->version = '8.0.3';
+        $this->version = '8.0.4';
         $this->icon = apply_filters('woocommerce_' . $this->id . '_icon', 'https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/paymentLogo.svg');
         $this->method_title         = __('ePayco Checkout', 'woo-epayco-agregador');
         $this->method_description   = __('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador');
