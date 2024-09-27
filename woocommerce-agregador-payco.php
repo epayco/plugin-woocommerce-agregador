@@ -6,12 +6,12 @@
  *
  * Plugin Name: WooCommerce Epayco Agregador
  * Description: Plugin ePayco Agregador for WooCommerce.
- * Version: 8.0.3
+ * Version: 8.0.4
  * Author: ePayco
  * Author URI: http://epayco.co
  * Tested up to: 6.4
  * WC requires at least: 7.4
- * WC tested up to: 8.3
+ * WC tested up to: 9.3.3
  * Text Domain: woo-epayco-agregador
  * Domain Path: /languages/
  * License: GNU General Public License v3.0
