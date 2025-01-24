@@ -107,7 +107,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         <div class="container-fluid">
             <div class="panel panel-default" style="">
-                <img src="<?php echo EPAYCO_AGREGADOR_PLUGIN_URL . '/assets/images/logo.svg' ?>">
+            <img src="https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/logo.png">
                 <div id="path_upload" hidden>
                     <?php esc_html_e($logo_url, 'text_domain'); ?>
                 </div>
