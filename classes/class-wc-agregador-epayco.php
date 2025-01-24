@@ -96,8 +96,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
      * Admin Panel Options
      *
      * @since 6.0.0
-     */
-    public function admin_options()
+     */ public function admin_options()
     {
         $validation_url = get_site_url() . "/";
         $validation_url = add_query_arg('wc-api', get_class($this) . "Validation", $validation_url);
@@ -108,7 +107,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         <div class="container-fluid">
             <div class="panel panel-default" style="">
-                <img src="https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/logo.png">
+                <img src="<?php echo EPAYCO_AGREGADOR_PLUGIN_URL . '/assets/images/logo.svg' ?>">
                 <div id="path_upload" hidden>
                     <?php esc_html_e($logo_url, 'text_domain'); ?>
                 </div>
@@ -196,7 +195,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 <?php
             endif;
         }
-
         /**
          * Initialise Gateway Settings Form Fields
          *
@@ -656,7 +654,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     <div hidden id="split">' . $split . '</div>  
                     <script
 
-                        src="https://checkout.epayco.co/checkout.js">
+                        src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js">
 
                     </script>
                     <script> var handler = ePayco.checkout.configure({
@@ -733,7 +731,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         headers["privatekey"] = privatekey;
                         headers["apikey"] = apikey;
                         var payment =   function (){
-                            return  fetch("https://cms.epayco.co/checkout/payment/session", {
+                            return  fetch("https://cms.epayco.io/checkout/payment/session", {
                                 method: "POST",
                                 body: JSON.stringify(info),
                                 headers
@@ -798,14 +796,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 trim($this->epayco_agregador_customerid),
                 trim($this->epayco_agregador_customerid)
             );
-            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout.js', array(), $this->version, null);
+            wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod.js', array(), $this->version, null);
             wc_enqueue_js(
                 '
 
-		jQuery("#btn_epayco_new").click(function(){
-		  console.log("epayco")
-		});
-		'
+            jQuery("#btn_epayco_new").click(function(){
+            console.log("epayco")
+            });
+		 '
             );
             return '<form  method="post" id="appGateway">
 		        </form>';
@@ -943,7 +941,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     exit();
                 }
 
-                $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
+                $url = 'https://secure.epayco.io/validation/v1/reference/' . $ref_payco;
                 $response = wp_remote_get($url);
                 $body = wp_remote_retrieve_body($response);
                 $jsonData = @json_decode($body, true);
@@ -961,47 +959,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 $x_fecha_transaccion = trim($validationData['x_fecha_transaccion']);
             }
 
-
             // Validamos la firma
             if ($order_id != "" && $x_ref_payco != "") {
                 $authSignature = $this->authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code);
-
-            $url = 'https://secure.epayco.co/validation/v1/reference/'.$ref_payco;
-            $response = wp_remote_get(  $url );
-            $body = wp_remote_retrieve_body( $response );
-            $jsonData = @json_decode($body, true);
-            $validationData = $jsonData['data'];
-            $x_signature = trim($validationData['x_signature']);
-            $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ?
-                (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
-            $x_ref_payco = trim($validationData['x_ref_payco']);
-            $x_transaction_id = trim($validationData['x_transaction_id']);
-            $x_amount = trim($validationData['x_amount']);
-            $x_currency_code = trim($validationData['x_currency_code']);
-            $x_test_request = trim($validationData['x_test_request']);
-            $x_approval_code = trim($validationData['x_approval_code']);
-            $x_franchise = trim($validationData['x_franchise']);
-            $x_fecha_transaccion = trim($validationData['x_fecha_transaccion']);
-        }
-
-        // Validamos la firma
-        if ($order_id != "" && $x_ref_payco != "") {
-            $authSignature = $this->authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code);
-        }
-
-        $message = '';
-        $messageClass = '';
-        $current_state = $order->get_status();
-
-        $isTestTransaction = $x_test_request == 'TRUE' ? "yes" : "no";
-        update_option('epayco_agregador_order_status', $isTestTransaction);
-        $isTestMode = get_option('epayco_agregador_order_status') == "yes" ? "true" : "false";
-        $isTestPluginMode = $this->epayco_agregador_testmode;
-        $x_approval_code_value = intval($x_approval_code);
-        if(floatval($order->get_total()) == floatval($x_amount)){
-            if("yes" == $isTestPluginMode){
-                $validation = true;
-
             }
 
             $message = '';
@@ -1359,8 +1319,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
             wp_redirect($redirect_url);
         }
-
-
         public function authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code)
         {
             $signature = hash(
@@ -1381,7 +1339,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         {
             $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
             $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
-            $response = wp_remote_post('https://apify.epayco.co/login', array(
+            $response = wp_remote_post('https://apify.epayco.io/login', array(
                 'headers' => array(
                     'Authorization' => 'Basic ' . base64_encode($username . ':' . $password),
                 ),
@@ -1391,51 +1349,17 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 echo "success";
                 exit();
             }
-
-        wp_redirect($redirect_url);
-    }
-
-    public function authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code){
-        $signature = hash('sha256',
-            trim($this->epayco_agregador_customerid).'^'
-            .trim($this->epayco_agregador_secretkey).'^'
-            .$x_ref_payco.'^'
-            .$x_transaction_id.'^'
-            .$x_amount.'^'
-            .$x_currency_code
-        );
-        return $signature;
-    }
-    /**
-     * @param $validationData
-     */
-    function ePayco_Agregador_successful_validation($validationData)
-    {
-        $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
-        $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
-        $response = wp_remote_post( 'https://apify.epayco.co/login', array(
-            'headers' => array(
-                'Authorization' => 'Basic ' . base64_encode( $username . ':' . $password ),
-            ),
-        ) );
-        $data = json_decode( wp_remote_retrieve_body( $response ) );
-        if($data->token){
-            echo "success";
-            exit();
-
         }
 
         function string_sanitize($string, $force_lowercase = true, $anal = false)
         {
 
-
-            $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]", "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;", "â€”", "â€“", ",", "<", ".", ">", "/", "?");
+            $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "_", "=", "+", "[", "{", "]", "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;", "â€”", "â€“", "<", ">", "/", "?");
             $clean = trim(str_replace($strip, "", strip_tags($string)));
             $clean = preg_replace('/\s+/', "_", $clean);
             $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9]/", "", $clean) : $clean;
             return $clean;
         }
-
 
         /**
          * @param $order_id
