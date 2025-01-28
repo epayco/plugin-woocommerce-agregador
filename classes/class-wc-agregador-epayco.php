@@ -96,7 +96,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
      * Admin Panel Options
      *
      * @since 6.0.0
-     */ public function admin_options()
+     */
+    public function admin_options()
     {
         $validation_url = get_site_url() . "/";
         $validation_url = add_query_arg('wc-api', get_class($this) . "Validation", $validation_url);
@@ -107,7 +108,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         <div class="container-fluid">
             <div class="panel panel-default" style="">
-            <img src="https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/logo.png">
+                <img src="https://multimedia-epayco.s3.amazonaws.com/plugins-sdks/logo.png">
                 <div id="path_upload" hidden>
                     <?php esc_html_e($logo_url, 'text_domain'); ?>
                 </div>
