@@ -708,7 +708,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 data.split_merchant_id= "%s", //Id de la cuenta principal y a nombre de quien quedara la transacción
                                 data.split_type= "01", // tipo de dispersión 01 -> fija ---- 02 -> porcentual
                                 data.split_primary_receiver= "%s", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
-                                data.split_primary_receiver_fee= "0", // Parámetro no a utilizar pero que debe de ir en cero
+                                data.splitPrimaryReceiver_fee= "0", // Parámetro no a utilizar pero que debe de ir en cero
                                 data.splitpayment= "true", // Indicación de funcionalidad split
                                 data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
                                 data.split_receivers= split_receivers
