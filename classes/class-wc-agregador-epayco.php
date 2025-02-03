@@ -840,9 +840,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 </p>';
 
             if ($this->epayco_agregador_lang === "2") {
-                $epaycoButtonImage = 'https://multimedia.epayco.co//plugins-sdks/Boton-color-Ingles.png';
+                $epaycoButtonImage = 'https://multimedia.epayco.co/plugins-sdks/Boton-color-Ingles.png';
             } else {
-                $epaycoButtonImage = 'https://multimedia.epayco.co//plugins-sdks/Boton-color-espanol.png';
+                $epaycoButtonImage = 'https://multimedia.epayco.co/plugins-sdks/Boton-color-espanol.png';
             }
 
             echo '<p>       
