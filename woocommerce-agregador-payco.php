@@ -6,10 +6,10 @@
  *
  * Plugin Name: WooCommerce Epayco Agregador
  * Description: Plugin ePayco Agregador for WooCommerce.
- * Version: 8.0.4
+ * Version: 8.1.0
  * Author: ePayco
  * Author URI: http://epayco.co
- * Tested up to: 6.4
+ * Tested up to: 6.8.3
  * WC requires at least: 7.4
  * WC tested up to: 9.3.3
  * Text Domain: woo-epayco-agregador
@@ -381,7 +381,7 @@ function epayco_agregador_product_settings_tabs( $tabs ){
     );
     return $tabs;
 }
-add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
+//add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
 
 
 function epayco_agregador_product_panels(){
@@ -437,7 +437,7 @@ function epayco_agregador_product_panels(){
             jQuery("#_super_product_a").click( update_wjecf_apply_silently_field );
             </script>';
 }
-add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
+//add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
 
 
 function epayco_agregador_save_fields( $id, $post ){
@@ -446,7 +446,7 @@ function epayco_agregador_save_fields( $id, $post ){
     update_post_meta( $id, 'epayco_comition_a', $_POST['epayco_comition_a'] );
     update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
 }
-add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
+//add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
 
 function epayco_agregador_css_icon(){
     echo '<style>
@@ -455,7 +455,7 @@ function epayco_agregador_css_icon(){
     }
     </style>';
 }
-add_action('admin_head', 'epayco_agregador_css_icon');
+//add_action('admin_head', 'epayco_agregador_css_icon');
 
 /////////////////////////////////////////////////////////////////////
 // Display as order meta
