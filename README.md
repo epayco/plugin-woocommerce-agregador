@@ -6,6 +6,7 @@
 
 | Versión | URL de repositorio | Versión compatible con Woocommerce | ¿Incluye soporte de ePayco? |
 | :---:   | :---:     | :---:    | :---:    |
+| 8.1.0   | [ePayco plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.1.0)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
 | 8.0.4   | [ePayco plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.4)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
 | 8.0.3   | [ePayco plugin WooCommerce v8.0.3](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.3)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
 | 8.0.2   | [ePayco plugin WooCommerce v8.0.2](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.2)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
