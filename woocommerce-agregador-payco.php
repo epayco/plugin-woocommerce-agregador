@@ -381,7 +381,7 @@ function epayco_agregador_product_settings_tabs( $tabs ){
     );
     return $tabs;
 }
-//add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
+add_filter('woocommerce_product_data_tabs', 'epayco_agregador_product_settings_tabs' );
 
 
 function epayco_agregador_product_panels(){
@@ -391,8 +391,11 @@ function epayco_agregador_product_panels(){
     woocommerce_wp_text_input( array(
         'id'                => 'p_cust_id_client_a',
         'value'             => get_post_meta( get_the_ID(), 'p_cust_id_client_a', true ),
-        'label'             => 'Id customer',
-        'description'       => 'Id del usuario que va a recibir el pago'
+        'label'             => 'Id customer *',
+        'description'       => 'Id del usuario que va a recibir el pago (campo obligatorio)',
+        'custom_attributes' => array(
+            'required' => 'required'
+        )
     ) );
 
     woocommerce_wp_checkbox( array(
@@ -411,19 +414,29 @@ function epayco_agregador_product_panels(){
         'value'       => get_post_meta( get_the_ID(), 'epayco_comition_a', true ),
         'label'       => 'Comisión',
         'desc_tip'    => true,
-        'description' => 'Valor de la comisión que se paga al comercio',
+        'description' => 'Valor de la comisión que se paga al recibidor',
         'wrapper_class' => 'epayco_comition_a',
     ) );
 
+        woocommerce_wp_textarea_input( array(
+        'id'          => 'epayco_fee',
+        'value'       => get_post_meta( get_the_ID(), 'epayco_fee', true ),
+        'label'       => 'Fee',
+        'desc_tip'    => true,
+        'description' => 'Valor de la comisión que se paga al comercio principal',
+        'wrapper_class' => 'epayco_fee',
+    ) );
+/*
     woocommerce_wp_select(array(
         'id' => 'epayco_ext_a',
         'value' => get_post_meta(get_the_ID(), 'epayco_ext_a', true),
         'wrapper_class' => 'epayco_ext_a',
         'label' => 'Tipo de dispersión',
-        'options' => array('01' => 'fija'),
+        'options' => array('01' => 'fija','02'=>'porcentual'),
         'desc_tip'    => true,
         'description' => 'hace referencia al tipo de fee que se enviará al comercio principal',
     ));
+    */
     echo '</div>';
     echo  '<script type="text/javascript">
                 function update_wjecf_apply_silently_field(  ) { 
@@ -435,18 +448,42 @@ function epayco_agregador_product_panels(){
             }
             update_wjecf_apply_silently_field()
             jQuery("#_super_product_a").click( update_wjecf_apply_silently_field );
+            
+            // Validación del campo obligatorio
+            jQuery(document).ready(function($) {
+                $("#publish, #save-post").click(function(e) {
+                    var p_cust_id = $("#p_cust_id_client_a").val().trim();
+                    if (p_cust_id === "") {
+                        e.preventDefault();
+                        alert("El campo \"Id customer\" es obligatorio. Por favor, complete este campo antes de guardar.");
+                        $("#p_cust_id_client_a").focus();
+                        return false;
+                    }
+                });
+                
+                // Agregar estilo visual para campo requerido
+                $("#p_cust_id_client_a").css("border-left", "3px solid #dc3545");
+            });
             </script>';
 }
-//add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
+add_action( 'woocommerce_product_data_panels', 'epayco_agregador_product_panels' );
 
 
 function epayco_agregador_save_fields( $id, $post ){
+    // Validación del campo obligatorio
+    if ( empty( $_POST['p_cust_id_client_a'] ) ) {
+        // Agregar error de validación
+        WC_Admin_Meta_Boxes::add_error( __( 'El campo "Id customer" es obligatorio.', 'woo-epayco-agregador' ) );
+        return;
+    }
+    
     update_post_meta( $id, '_super_product_a', $_POST['_super_product_a'] );
-    update_post_meta( $id, 'p_cust_id_client_a', $_POST['p_cust_id_client_a'] );
+    update_post_meta( $id, 'p_cust_id_client_a', sanitize_text_field( $_POST['p_cust_id_client_a'] ) );
     update_post_meta( $id, 'epayco_comition_a', $_POST['epayco_comition_a'] );
-    update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
+    update_post_meta( $id, 'epayco_fee', $_POST['epayco_fee'] );
+    //update_post_meta( $id, 'epayco_ext_a', $_POST['epayco_ext_a'] );
 }
-//add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
+add_action( 'woocommerce_process_product_meta', 'epayco_agregador_save_fields', 10, 2 );
 
 function epayco_agregador_css_icon(){
     echo '<style>
@@ -455,7 +492,7 @@ function epayco_agregador_css_icon(){
     }
     </style>';
 }
-//add_action('admin_head', 'epayco_agregador_css_icon');
+add_action('admin_head', 'epayco_agregador_css_icon');
 
 /////////////////////////////////////////////////////////////////////
 // Display as order meta
@@ -464,7 +501,7 @@ function my_field_order_meta_handler_agregador( $item_id, $values, $cart_item_ke
         wc_add_order_item_meta( $item_id, "modo", $values['modo'] );
     }
 }
-add_action( 'woocommerce_add_order_item_meta', 'my_field_order_meta_handler_agregador', 1, 3 );
+add_action( 'woocommerce_new_order_item', 'my_field_order_meta_handler_agregador', 1, 3 );
 
 // Update the user meta with field value
 add_action('woocommerce_checkout_update_user_meta', 'my_custom_checkout_field_update_user_meta_agregador');
