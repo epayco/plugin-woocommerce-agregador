@@ -369,7 +369,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 'type' => 'select',
                 'css' =>'line-height: inherit',
                 'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
-                'options' => array('01' => 'fijo','02' => 'porcentaje'),
+                'options' => array('02' => 'porcentaje'),
             ),
             );
             $epayco_langs   = array(
@@ -458,9 +458,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     if ($isSplit) {
                         if (!empty($epayco_p_cust_id_client[0])) {
                             if ($epayco_tipe_split == "02") {
-                                $receiversa['merchantId'] = $epayco_p_cust_id_client[0];
+                                $receiversa['merchantId'] = (int)$epayco_p_cust_id_client[0];
                             } else {
-                                $receiversa['id'] = $epayco_p_cust_id_client[0];
+                                $receiversa['id'] = (int)$epayco_p_cust_id_client[0];
                             }
                             $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
                             $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
@@ -635,7 +635,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         ',
             $checkout
             );
-            wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.us-east-1.amazonaws.com/checkout.preprod.js', array(), '8.1.0', null);
+            wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js', array(), '8.1.0', null);
             wc_enqueue_js(
                 '
             jQuery("#btn_epayco_new").click(function(){
