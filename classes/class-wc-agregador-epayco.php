@@ -512,7 +512,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             $currency = strtolower(get_woocommerce_currency());
             $testMode = $this->epayco_agregador_testmode == "yes" ? true : false;
             $basedCountry = WC()->countries->get_base_country();
-            $external = $this->epayco_agregador_type_checkout;
+            $external = $this->epayco_agregador_type_checkout == "true" ? 'standard' : 'onepage';
             $redirect_url = get_site_url() . "/";
             $redirect_url = add_query_arg('wc-api', get_class($this), $redirect_url);
             $redirect_url = add_query_arg('order_id', $order_id, $redirect_url);
@@ -570,7 +570,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 ],
                 "epaycoMethodsDisable" => [],
                 "method"=> "POST",
-                "checkout_version"=>"2"
+                "checkout_version"=>"2",
+                "autoClick" => false,
             );
 
             if($isSplit){
@@ -606,7 +607,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             }
             $checkout =  base64_encode(json_encode([
                 "sessionId"=>$payload['sessionId'],
-                "external"=>$external
+                "external"=>$external,
+                "test"=>$testMode
             ]));              
             echo sprintf(
                 '<script>
@@ -614,15 +616,24 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     const params = JSON.parse(atob("%s"));
                     let {
                         sessionId,
-                        external
+                        external,
+                        test
                     } = params;
+                    const checkout = ePayco.checkout.configure({
+                        sessionId: sessionId,
+                        type: external,
+                        test: test
+                    });
                     var openNewChekout = function () {
-                        const handlerNew = ePayco.checkout.configure({
-                            sessionId: sessionId,
-                            external: external,
-                        });
-                        handlerNew.openNew();
+                        checkout.open();
                     }
+                    checkout.onErrors(errors => {
+                        console.error(errors);
+                        console.log("Evento que notifica un error en la integración");
+                    });
+                    checkout.onClosed(() => {
+                        console.log("Evento que notifica cuando se cierra el checkout");
+                    });
                     var openChekout = function () {
                         bntPagar.style.pointerEvents = "none";
                         openNewChekout()
@@ -1223,7 +1234,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         public function epayco_realizar_llamada_api($path, $data, $headers, $method = 'POST')
         {
             $url = 'https://eks-apify-service.epayco.io/' . $path;
-            
+            //$this->log->add($this->id,"request : " .json_encode($data));
             $response = wp_remote_post($url, [
                 'headers' => $headers,
                 'body'    => json_encode($data),
@@ -1237,6 +1248,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 return false;
             } else {
                 $response_body = wp_remote_retrieve_body($response);
+                //$this->log->add($this->id,"respuesta : " . json_encode($response_body));
                 $status_code = wp_remote_retrieve_response_code($response);
                 if ($status_code == 200) {
                     $responseTransaction = json_decode($response_body, true);
@@ -1244,6 +1256,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 } else {
                     $this->log->add($this->id,"Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
                     error_log("Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
+                    $this->log->add($this->id,"Error en la respuesta de la API de ePayco, : " . $response_body);
+                    error_log("Error en la respuesta de la API de ePayco, : " . $response_body);
                     return false;
                 }
             }
