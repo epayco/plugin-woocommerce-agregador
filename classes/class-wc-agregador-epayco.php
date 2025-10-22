@@ -566,7 +566,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     "extra1" => (string)$order->get_id(),
                 ],
                 "extrasEpayco" => [
-                    "extra5" => "p19"
+                    "extra5" => "P20"
                 ],
                 "epaycoMethodsDisable" => [],
                 "method"=> "POST",
