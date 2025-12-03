@@ -553,6 +553,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 "method"=> "POST",
                 "checkout_version"=>"2",
                 "autoClick" => false,
+                "noRedirectOnClose"=> true,
+                "forceResponse"=>false,//mostrar detalle de orden
+                "uniqueTransactionPerBill"=> false,
             );
 
             if($isSplit){
