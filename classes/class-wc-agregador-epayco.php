@@ -13,12 +13,32 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
      * @access public
      * @return void
      */
+    
+    public $msg;
+    public $epayco_agregador_customerid;
+    public $epayco_agregador_secretkey;
+    public $epayco_agregador_publickey;
+    public $epayco_agregador_privatekey;
+    public $split_payment;
+    public $split_payment_type;
+    public $monto_maximo;
+    public $epayco_agregador_testmode;
+    public $epayco_agregador_reduce_stock_pending;
+    public $epayco_agregador_type_checkout;
+    public $epayco_agregador_endorder_state;
+    public $epayco_agregador_cancelled_endorder_state;
+    public $epayco_agregador_url_response;
+    public $epayco_agregador_url_confirmation;
+    public $epayco_agregador_lang;
+    public $response_data;
+    public $log;
+
     public function __construct()
     {
 
         $this->id                   = 'epayco_agregador';
 
-        $this->version = '8.0.4';
+        //$this->version = '8.0.4';
         $this->icon = apply_filters('woocommerce_' . $this->id . '_icon', 'https://multimedia.epayco.co/plugins-sdks/paymentLogo.svg');
         $this->method_title         = __('ePayco Checkout', 'woo-epayco-agregador');
         $this->method_description   = __('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador');
@@ -76,8 +96,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         if ($this->epayco_agregador_testmode == "yes") {
             if (class_exists('WC_Logger')) {
                 $this->log = new WC_Logger();
-            } else {
-                $this->log = WC_ePayco::woocommerce_instance()->logger();
             }
         }
     }
@@ -346,13 +364,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'description' => __('Habilitar splitpayment', 'epayco_woocommerce'),
                     'default' => 'no',
                 ),
-                /*'split_payment_type' => array(
+                'split_payment_type' => array(
                 'title' => __('Tipo de splitpayment', 'epayco_agregador_woocommerce'),
                 'type' => 'select',
                 'css' =>'line-height: inherit',
                 'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
-                'options' => array('01' => 'fija','02' => 'porcentaje'),
-            ),*/
+                'options' => array('02' => 'porcentaje','01' => 'fijo'),
+            ),
             );
             $epayco_langs   = array(
                 '1'      => 'Español',
@@ -404,6 +422,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             $totalSplitAmount = 0;
             $tax = $order->get_total_tax();
             $tax = round($tax, 2);
+
             $base_tax = $order->get_subtotal() - $order->get_total_discount();
             foreach ($order->get_items('tax') as $item_id => $item) {
                 if (strtolower($item->get_label()) == 'iva') {
@@ -414,8 +433,6 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 }
             }
 
-
-
             $shipping_data_total = 0;
             $shipping_data_taxes = 0;
             foreach ($order->get_items('shipping') as $item_id => $item) {
@@ -423,159 +440,46 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 $shipping_data_total = $item_data['total'];
                 $shipping_data_taxes        = $item_data['taxes'];
             }
-            $isSplit = $this->split_payment == "yes";
+            $isSplit = $this->split_payment == "yes" ? true : false;
+            $epayco_tipe_split = $this->split_payment_type;
             foreach ($order->get_items() as $product) {
                 $epayco_p_cust_id_client = get_post_meta($product["product_id"], 'p_cust_id_client_a');
+                $taxPercent = $this->get_product_tax_rate_percentage($product["product_id"]);
                 $product_tax = 0;
-
                 foreach ($product["taxes"]["total"] as $clave => $valorProduct) {
                     if ($product_tax == 0) {
                         $product_tax = $valorProduct;
                     }
                 }
-
-                $epayco_p_cust_id_client = get_post_meta($product["product_id"], 'p_cust_id_client_a');
                 if (!empty($epayco_p_cust_id_client[0]) && $isSplit) {
                     $isProductoWhitSplit = true;
                     $totalSplitAmount = $totalSplitAmount + floatval($product['total']);
-                    // $epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
-                    $epayco_tipe_split = $this->split_payment_type;
-                    if (true) {
+                    //$epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
+                    if ($isSplit) {
                         if (!empty($epayco_p_cust_id_client[0])) {
-                            $receiversa['id'] = $epayco_p_cust_id_client[0];
+                            $receiversa['merchantId'] = (int)$epayco_p_cust_id_client[0];
                             $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
                             $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
-                            if ($epayco_super_product[0] != "yes") {
-                                $productTotalComision = floatval($epayco_epayco_comition[0]) * $product["quantity"];
-                                $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                                $fee =  $productTotalComision;
-                                $receiversa['iva'] = round($product_tax, 2);
-                                $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                                $receiversa['fee'] = round($fee, 2);
-                            } else {
-                                $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                                $receiversa['iva'] = round($product_tax, 2);
-                                $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                                $receiversa['fee'] = 0;
-                            }
+                            $epayco_fee = get_post_meta($product["product_id"], 'epayco_fee');
+                            $productTotalComision = floatval($product['total']) * $product["quantity"];
+                            $taxBase = $productTotalComision;
+                            //$product_tax = ($taxPercent * $productTotalComision)/100;
+                            $receiversa['amount'] = floatval($productTotalComision + $product_tax);
+                            $receiversa['tax'] = round($product_tax, 2);
+                            $receiversa['taxBase'] = round($taxBase, 2);
+                            $receiversa['fee'] = isset($epayco_fee[0]) ? round(floatval($epayco_fee[0]), 2) : 0;
+                            
                             if ($epayco_p_cust_id_client[0]) {
                                 array_push($receiversData, $receiversa);
                             }
-                        } else {
-                            $receiversa['id'] = $this->epayco_agregador_customerid;
-                            $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                            $receiversa['iva'] = round($product_tax, 2);
-                            $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                            $receiversa['fee'] = 0;
-                            array_push($receiversData, $receiversa);
                         }
-                    } else {
-                        if (!empty($epayco_p_cust_id_client[0])) {
-                            $receiversa['id'] = $epayco_p_cust_id_client[0];
-                            $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
-                            $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
-
-                            if ($epayco_super_product[0] != "yes") {
-                                $productTotalComision = ((floatval($epayco_epayco_comition[0])  * floatval($product['total'])) / 100);
-                                $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                                $fee =  round($productTotalComision, 2);
-                                $receiversa['iva'] = round($product_tax, 2);
-                                $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                                $receiversa['fee'] = $fee;
-                            } else {
-                                $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                                $receiversa['iva'] = round($product_tax, 2);
-                                $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                                $receiversa['fee'] = 0;
-                            }
-                            if ($epayco_p_cust_id_client[0]) {
-                                array_push($receiversData, $receiversa);
-                            }
-                        } else {
-                            $receiversa['id'] = $this->epayco_agregador_customerid;
-                            $receiversa['total'] = round(floatval($product['total']), 2) + round($product_tax, 2);
-                            $receiversa['iva'] = round($product_tax, 2);
-                            $receiversa['base_iva'] = round(floatval($product['total']), 2);
-                            $receiversa['fee'] = 0;
-                            array_push($receiversData, $receiversa);
-                        }
-                    }
-                } else {
-                    $shipingTotal = floatval($product['total']) + round($product_tax, 2);
-                    $shipingBase  = floatval($product['total']);
-                    $shipingTax = $tax;
-                    $receiver['id'] = $this->epayco_agregador_customerid;
-                    $receiver['total'] = round($shipingBase, 2) + round($product_tax, 2) + $shipping_data_total;
-                    $receiver['iva'] = round($product_tax, 2);
-                    $receiver['base_iva'] = round($shipingBase, 2);
-                    $receiver['fee'] = 0;
-                    array_push($receiversData, $receiver);
+                    } 
                 }
                 $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                 $descripcionParts[] = $clearData;
             }
 
-            $isSplitProducto = false;
             $receiversWithProduct = [];
-
-            if (floatval($totalSplitAmount) != floatval($base_tax)) {
-                foreach ($receiversData as  $receiverinfo) {
-                    if ($receiverinfo["id"] == $this->epayco_agregador_customerid) {
-                        $isSplitProducto = true;
-                    }
-                }
-                $receivers = [];
-                $receiverTotal = 0;
-                $receiverTax = 0;
-                $receiverBase = 0;
-                $receiver = [];
-                foreach ($receiversData as  $k => $dato) {
-                    if ($dato["id"] == $this->epayco_agregador_customerid) {
-                        $receiverTotal += $dato["total"];
-                        $receiverTax += $dato["iva"];
-                        $receiverBase += $dato["base_iva"];
-                        $receiver['id'] = $this->epayco_agregador_customerid;
-                        $receiver['total'] = round($receiverTotal, 2);
-                        $receiver['iva'] = round($receiverTax, 2);
-                        $receiver['base_iva'] = round($receiverBase, 2);
-                        $receiver['fee'] = 0;
-                    }
-                }
-                array_push($receivers, $receiver);
-
-                if ($isSplitProducto) {
-                    foreach ($receiversData as  $k => $dato) {
-                        if ($dato["id"] != $this->epayco_agregador_customerid) {
-                            $receiver['id'] = $dato["id"];
-                            $receiver['total'] = round($dato["total"], 2);
-                            $receiver['iva'] = round($dato["iva"], 2);
-                            $receiver['base_iva'] = round($dato["base_iva"], 2);
-                            $receiver['fee'] = round($dato["fee"], 2);
-                            array_push($receiversWithProduct, $receiver);
-                        }
-                    }
-
-                    $receiversData = [];
-                    $receiver_ = [];
-                    foreach ($receivers as  $k => $dato) {
-                        if ($dato["id"] == $this->epayco_agregador_customerid) {
-                            $receiver_['id'] = $this->epayco_agregador_customerid;
-                            $receiver_['total'] = round(($dato["total"]), 2);
-                            $receiver_['iva'] = round(($dato["iva"]), 2);
-                            $receiver_['base_iva'] = round(($dato["base_iva"]), 2);
-                            $receiver_['fee'] = 0;
-                        }
-                    }
-                    array_push($receiversData, $receiver_);
-                } else {
-                    $receiversa['id'] = $this->epayco_agregador_customerid;
-                    $receiversa['total'] = floatval($shipping_data_total);
-                    $receiversa['iva'] = 0;
-                    $receiversa['base_iva'] = floatval($shipping_data_total);
-                    $receiversa['fee'] = 0;
-                    array_push($receiversData, $receiversa);
-                }
-            }
 
             if ($isProductoWhitSplit) {
                 $receivers = array_merge($receiversWithProduct, $receiversData);
@@ -583,45 +487,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 $receivers = $receiversData;
             }
 
-            $split = 'false';
-            $receiversInfo = [];
-
-            if (count($receivers) < 2) {
-                $custId = isset($receivers[0]['id']) ? $receivers[0]['id'] : null;
-                if ($custId) {
-                    $split = 'true';
-                }
-            } else {
-                foreach ($receivers as $key => $receiver) {
-                    foreach ($receivers[$key] as $customer) {
-                        if ($customer === '') {
-                            unset($receivers[$key]);
-                        }
-                    }
-                }
-                if (count($receivers) > 0) {
-                    $split = 'true';
-                }
-            }
-
-            foreach ($receivers as  $receiver) {
-                array_push($receiversInfo, $receiver);
-            }
-            if (count($receiversInfo) > 0) {
-                foreach ($receiversInfo as  $receiver) {
-                    if ($receiver["id"] == $this->epayco_agregador_customerid && !$isProductoWhitSplit) {
-                        $split = 'false';
-                    } else {
-                        $split = 'true';
-                    }
-                }
-            }
-
             $descripcion = implode(' - ', $descripcionParts);
             $currency = strtolower(get_woocommerce_currency());
-            $testMode = $this->epayco_agregador_testmode == "yes" ? "true" : "false";
+            $testMode = $this->epayco_agregador_testmode == "yes" ? true : false;
             $basedCountry = WC()->countries->get_base_country();
-            $external = $this->epayco_agregador_type_checkout;
+            $external = $this->epayco_agregador_type_checkout == "true" ? 'standard' : 'onepage';
             $redirect_url = get_site_url() . "/";
             $redirect_url = add_query_arg('wc-api', get_class($this), $redirect_url);
             $redirect_url = add_query_arg('order_id', $order_id, $redirect_url);
@@ -650,115 +520,135 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 $order->update_status($orderStatus);
                 //$this->restore_order_stock($order->get_id(),"decrease");
             }
+            $date = new DateTimeImmutable();
+            //$date->getTimestamp()
+            $payload  = array(
+                "test"=>$testMode,
+                "name"=>$descripcion,
+                "description"=>$descripcion,
+                "invoice"=>(string)$order->get_id(),
+                "currency"=>$currency,
+                "amount"=>floatval($order->get_total()),
+                "taxBase"=>floatval($base_tax),
+                "tax"=>floatval($tax),
+                "taxIco"=>floatval($ico),
+                "country"=>$basedCountry,
+                "lang"=>$lang,
+                "confirmation"=>$confirm_url,
+                "response"=>$redirect_url,
+                "billing" => [
+                    "name" => $name_billing,
+                    "address" => $address_billing,
+                    "email" => $email_billing,
+                    "mobilePhone" => $phone_billing
+                ],
+                "ip"=>$myIp,
+                 "extras" => [
+                    "extra1" => (string)$order->get_id(),
+                ],
+                "extrasEpayco" => [
+                    "extra5" => "P20"
+                ],
+                "epaycoMethodsDisable" => [],
+                "method"=> "POST",
+                "checkout_version"=>"2",
+                "autoClick" => false,
+                "noRedirectOnClose"=> true,
+                "forceResponse"=>false,//mostrar detalle de orden
+                "uniqueTransactionPerBill"=> false,
+            );
+
+            if($isSplit){
+                if($epayco_tipe_split == "02"){
+                    $payload["splitPayment"] = [
+                        "type" =>"percentage",
+                        "receivers" =>$receivers
+                    ];
+                }else{
+                    $payload["splitPayment"] = [
+                        "type" =>"amount",
+                        "receivers" =>$receivers
+                    ];
+                }
+            }
+
+            $path = "payment/session/create";
+
+            $tokenResponse = $this->epyacoBerarToken();
+            $bearerToken = ($tokenResponse && isset($tokenResponse['token'])) ? $tokenResponse['token'] : '';
+            $newToken['token'] =  $bearerToken;
+            $epayco_status_session = $this->getEpaycoSessionId($path,$payload, $newToken);
+            if ($epayco_status_session['success']) {
+                if (isset($epayco_status_session['data']) && is_array($epayco_status_session['data'])) {
+                    $sessionId =  $epayco_status_session['data']['sessionId'];
+                    $payload['sessionId'] = $sessionId;
+                }
+            }else{
+                $messageError = $epayco_status_session['textResponse'];
+                $errorMessage = "";
+                if (isset($epayco_status_session['data']['errors'])) {
+                    $errors = $epayco_status_session['data']['errors'];
+                    if(is_array($errors)){
+                        foreach ($errors as $error) {
+                            $errorMessage = $error['errorMessage'] . "\n";
+                        }
+                    }else{
+                        $errorMessage = $errors. "\n";
+                    }
+                } elseif (isset($epayco_status_session['data']['error']['errores'])) {
+                    $errores = $epayco_status_session['data']['error']['errores'];
+                    foreach ($errores as $error) {
+                        $errorMessage = $error['errorMessage'] . "\n";
+                    }
+                }
+                //$processReturnFailMessage = $messageError . " " . $errorMessage;
+                $processReturnFailMessage =  $errorMessage;
+                 echo sprintf(
+                '<div style="
+                        display: flex;
+                        align-items: center;
+                        flex-direction: column;
+                    ">
+                    <div>
+                    <img style="width: 80px;" src="https://multimedia-epayco-preprod.s3.us-east-1.amazonaws.com/plugins-sdks/warning.png" alt="" />
+                    </div>
+                    <div 
+                    style="text-align: center;font-size: large;font-weight: 900;">
+                        <p>"%s"</p>
+                    </div>
+                </div>',
+                    $processReturnFailMessage
+                );
+            }
+            $checkout =  base64_encode(json_encode([
+                "sessionId"=>$payload['sessionId'],
+                "external"=>$external,
+                "test"=>$testMode
+            ]));              
             echo sprintf(
-                '
-                    <div hidden id="split">' . $split . '</div>  
-                    <script
-
-                        src="https://checkout.epayco.co/checkout.js">
-
-                    </script>
-                    <script> var handler = ePayco.checkout.configure({
-                        key: "%s",
-                        test: "%s"
-                    })
-                    var date = new Date().getTime();
+                '<script>
                     var bntPagar = document.getElementById("btn_epayco");
-                    var data = {
-                        name: "%s",
-                        description: "%s",
-                        invoice: "%s",
-                        currency: "%s",
-                        amount: "%s".toString(),
-                        tax_base: "%s".toString(),
-                        tax: "%s".toString(),
-                        taxIco: "%s".toString(),
-                        country: "%s",
-                        lang: "%s",
-                        external: "%s",
-                        confirmation: "%s",
-                        response: "%s",
-                        name_billing: "%s",
-                        address_billing: "%s",
-                        email_billing: "%s",
-                        mobilephone_billing: "%s",
-                        autoclick: "true",
-                        ip: "%s",
-                        test: "%s".toString(),
-                        extras_epayco:{extra5:"p20"},
-                        method_confirmation: "POST"
-                    }
-                    const apiKey = "%s";
-                    const privateKey = "%s";
-                    let split = document.getElementById("split").textContent;
-                    if(split == "true"){
-                        console.log("split con ePayco")
-                        var js_array =' . json_encode($receiversInfo) . ';
-                                let split_receivers = [];
-                                 for(var jsa of js_array){
-                                    split_receivers.push({
-                                        "id" :  jsa.id,
-                                        "total": jsa.total,
-                                        "iva" : jsa.iva,
-                                        "base_iva": jsa.base_iva,
-                                        "fee" : jsa.fee
-                                    });
-                                }
-                                data.split_app_id= "%s", //Id de la cuenta principal
-                                data.split_merchant_id= "%s", //Id de la cuenta principal y a nombre de quien quedara la transacción
-                                data.split_type= "01", // tipo de dispersión 01 -> fija ---- 02 -> porcentual
-                                data.split_primary_receiver= "%s", // Id de la cuenta principal - parámetro para recibir valor de la dispersión destinado
-                                data.splitPrimaryReceiver_fee= "0", // Parámetro no a utilizar pero que debe de ir en cero
-                                data.splitpayment= "true", // Indicación de funcionalidad split
-                                data.split_rule= "multiple", // Parámetro para configuración de Split_receivers - debe de ir por defecto en multiple
-                                data.split_receivers= split_receivers
-                    }
+                    const params = JSON.parse(atob("%s"));
+                    let {
+                        sessionId,
+                        external,
+                        test
+                    } = params;
+                    const checkout = ePayco.checkout.configure({
+                        sessionId: sessionId,
+                        type: external,
+                        test: test
+                    });
                     var openNewChekout = function () {
-                        if(localStorage.getItem("invoicePayment") == null){
-                            localStorage.setItem("invoicePayment", data.invoice);
-                            makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
-                        }else{
-                            if(localStorage.getItem("invoicePayment") != data.invoice){
-                                localStorage.removeItem("invoicePayment");
-                                localStorage.setItem("invoicePayment", data.invoice);
-                                makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
-                            }else{
-                                makePayment(privateKey,apiKey,data, data.external == "true"?true:false)
-                            }
-                        }
+                        checkout.open();
                     }
-                    var makePayment = function (privatekey, apikey, info, external) {
-                        const headers = { "Content-Type": "application/json" } ;
-                        headers["privatekey"] = privatekey;
-                        headers["apikey"] = apikey;
-                        var payment =   function (){
-                            return  fetch("https://cms.epayco.co/checkout/payment/session", {
-                                method: "POST",
-                                body: JSON.stringify(info),
-                                headers
-                            })
-                                .then(res =>  res.json())
-                                .catch(err => err);
-                        }
-                        payment()
-                            .then(session => {
-                                bntPagar.style.pointerEvents = "all";
-                                if(session.data.sessionId != undefined){
-                                    localStorage.removeItem("sessionPayment");
-                                    localStorage.setItem("sessionPayment", session.data.sessionId);
-                                    const handlerNew = window.ePayco.checkout.configure({
-                                        sessionId: session.data.sessionId,
-                                        external: external,
-                                    });
-                                    handlerNew.openNew()
-                                }else{
-                                    handler.open(data);
-                                }
-                            })
-                            .catch(error => {
-                                error.message;
-                            });
-                    }
+                    checkout.onErrors(errors => {
+                        console.error(errors);
+                        console.log("Evento que notifica un error en la integración");
+                    });
+                    checkout.onClosed(() => {
+                        console.log("Evento que notifica cuando se cierra el checkout");
+                    });
                     var openChekout = function () {
                         bntPagar.style.pointerEvents = "none";
                         openNewChekout()
@@ -766,41 +656,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     bntPagar.addEventListener("click", openChekout);
             	    openChekout()    
                 </script>
-                </form>
-                </center>
-
+            </form>
+        </center>
         ',
-                trim($this->epayco_agregador_publickey),
-                $testMode,
-                $descripcion,
-                $descripcion,
-                $order->get_id(),
-                $currency,
-                $order->get_total(),
-                $base_tax,
-                $iva,
-                $ico,
-                $basedCountry,
-                $lang,
-                $external,
-                $confirm_url,
-                $redirect_url,
-                $name_billing,
-                $address_billing,
-                $email_billing,
-                $phone_billing,
-                $myIp,
-                $testMode,
-                trim($this->epayco_agregador_publickey),
-                trim($this->epayco_agregador_privatekey),
-                trim($this->epayco_agregador_customerid),
-                trim($this->epayco_agregador_customerid),
-                trim($this->epayco_agregador_customerid)
+            $checkout
             );
-            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout.js', array(), $this->version, null);
+            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout-v2.js', array(), '8.1.0', null);
             wc_enqueue_js(
                 '
-
             jQuery("#btn_epayco_new").click(function(){
             console.log("epayco")
             });
@@ -808,6 +671,25 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             );
             return '<form  method="post" id="appGateway">
 		        </form>';
+        }
+
+        function get_product_tax_rate_percentage( $product_id ) {
+            $product = wc_get_product( $product_id );
+            if ( ! $product ) return 0;
+
+            // Clase de impuesto asignada al producto
+            $tax_class = $product->get_tax_class(); // Ej: 'reduced-rate' o ''
+            
+            // Obtener tarifas para esa clase de impuesto
+            $tax_rates = WC_Tax::get_rates( $tax_class );
+
+            if ( empty( $tax_rates ) ) {
+                return 0;
+            }
+
+            // Obtener el primer porcentaje de la lista
+            $rate = reset( $tax_rates );
+            return isset( $rate['rate'] ) ? floatval( $rate['rate'] ) : 0;
         }
         /**
          * Process the payment and return the result
@@ -880,6 +762,17 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 do_action("ePayco_Agregador_init_validation", $_REQUEST);
             } else {
                 wp_die('Do not access this page directly (ePayco)');
+            }
+        }
+
+        public function getEpaycoSessionId($path,$data, $token)
+        {
+            if ($token) {
+                $headers = [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer '.$token['token'],
+                ];
+                return $this->epayco_realizar_llamada_api($path, $data, $headers);
             }
         }
 
@@ -1332,6 +1225,57 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     . $x_currency_code
             );
             return $signature;
+        }
+        public function epyacoBerarToken()
+        {
+            $publicKey = trim($this->epayco_agregador_publickey);
+            $privateKey = trim($this->epayco_agregador_privatekey);
+            if (!isset($_COOKIE[$publicKey])) {
+                $token = base64_encode($publicKey . ":" . $privateKey);
+                $bearer_token = $token;
+                $cookie_value = $bearer_token;
+                setcookie($publicKey, $cookie_value, time() + (60 * 14), "/");
+            } else {
+                $bearer_token = $_COOKIE[$publicKey];
+            }
+
+            $headers = array(
+                'Content-Type' => 'application/json',
+                'Authorization' => "Basic " . $bearer_token
+            );
+            return $this->epayco_realizar_llamada_api("login", [], $headers);
+        }
+
+        public function epayco_realizar_llamada_api($path, $data, $headers, $method = 'POST')
+        {
+            $url = 'https://apify.epayco.co/' . $path;
+            //$this->log->add($this->id,"request : " .json_encode($data));
+            $response = wp_remote_post($url, [
+                'headers' => $headers,
+                'body'    => json_encode($data),
+                'timeout' => 15,
+            ]);
+
+            if (is_wp_error($response)) {
+                $error_message = $response->get_error_message();
+                $this->log->add($this->id, "Error al hacer la llamada a la API de ePayco: " . $error_message);
+                error_log("Error al hacer la llamada a la API de ePayco: " . $error_message);
+                return false;
+            } else {
+                $response_body = wp_remote_retrieve_body($response);
+                //$this->log->add($this->id,"respuesta : " . json_encode($response_body));
+                $status_code = wp_remote_retrieve_response_code($response);
+                if ($status_code == 200) {
+                    $responseTransaction = json_decode($response_body, true);
+                    return $responseTransaction;
+                } else {
+                    $this->log->add($this->id,"Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
+                    error_log("Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
+                    $this->log->add($this->id,"Error en la respuesta de la API de ePayco, : " . $response_body);
+                    error_log("Error en la respuesta de la API de ePayco, : " . $response_body);
+                    return false;
+                }
+            }
         }
         /**
          * @param $validationData
