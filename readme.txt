@@ -48,5 +48,8 @@ Yes. But it is advisable that you consider using it since it is revealing for br
 = 6.0.0 =
 * Initial stable release
 
+= 8.1.0 =
+* update ePayco checkout v2
+
 == Additional Info ==
 **Contribute** [repository on github](https://github.com/epayco/Plugin_ePayco_WooCommerce)
