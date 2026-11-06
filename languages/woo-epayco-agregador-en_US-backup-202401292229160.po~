@@ -2,54 +2,50 @@
 # This file is distributed under the GNU General Public License v3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Davipay Agregador 7.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/plugin-"
-"woocommerce-agregador\n"
+"Project-Id-Version: WooCommerce Davipay Agregador 8.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/plugin-woocommerce-agregador\n"
 "Last-Translator: \n"
 "Language-Team: English (United States)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2024-01-29T17:18:49-05:00\n"
-"PO-Revision-Date: 2024-01-29 22:21+0000\n"
-"X-Generator: Loco https://localise.biz/\n"
+"PO-Revision-Date: 2026-11-06 15:30-0500\n"
 "X-Domain: woo-epayco-agregador\n"
-"\n"
 "Language: en_US\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Loco-Version: 2.6.6; wp-6.4.2"
 
 #. Plugin Name of the plugin
 msgid "WooCommerce Davipay Agregador"
-msgstr ""
+msgstr "WooCommerce Davipay Agregador"
 
 #. Description of the plugin
 msgid "Plugin Davipay Agregador for WooCommerce."
-msgstr ""
+msgstr "Plugin Davipay Agregador for WooCommerce."
 
 #. Author of the plugin
 msgid "Davipay"
-msgstr ""
+msgstr "Davipay"
 
 #. Author URI of the plugin
 msgid "http://davipay.co"
-msgstr ""
+msgstr "http://davipay.co"
 
 #: classes/class-wc-agregador-epayco.php:26
 msgid "Davipay Checkout"
-msgstr ""
+msgstr "Davipay Checkout"
 
 #: classes/class-wc-agregador-epayco.php:27
 msgid "Acepta tarjetas de credito, depositos y transferencias."
-msgstr ""
+msgstr "Accepts credit cards, deposits and bank transfers."
 
 #: classes/class-wc-agregador-epayco.php:28
 msgid "Pagar"
-msgstr ""
+msgstr "Pay"
 
 #: classes/class-wc-agregador-epayco.php:120
 msgid "Configuración Davipay"
-msgstr ""
+msgstr "Davipay Settings"
 
 #: classes/class-wc-agregador-epayco.php:124
 msgid ""
@@ -57,24 +53,29 @@ msgid ""
 "Davipay.Si el cliente decide pagar por Davipay, el estado del pedido cambiará "
 "a "
 msgstr ""
+"This module lets you accept secure payments through the Davipay payment "
+"platform. If the customer chooses to pay with Davipay, the order status will "
+"change to "
 
 #: classes/class-wc-agregador-epayco.php:125
 msgid " Esperando Pago"
-msgstr ""
+msgstr " Awaiting Payment"
 
 #: classes/class-wc-agregador-epayco.php:126
 msgid ""
 "Cuando el pago sea Aceptado o Rechazado Davipay envía una confirmación a la "
 "tienda para cambiar el estado del pedido."
 msgstr ""
+"When the payment is Approved or Rejected, Davipay sends a confirmation to "
+"the store to update the order status."
 
 #: classes/class-wc-agregador-epayco.php:137
 msgid "Validar llaves"
-msgstr ""
+msgstr "Validate keys"
 
 #: classes/class-wc-agregador-epayco.php:146
 msgid "Validación de llaves PUBLIC_KEY y PRIVATE_KEY"
-msgstr ""
+msgstr "PUBLIC_KEY and PRIVATE_KEY validation"
 
 #: classes/class-wc-agregador-epayco.php:158
 msgid ""
@@ -87,70 +88,79 @@ msgid ""
 "                                        Llaves API en su Dashboard Davipay."
 "</p>"
 msgstr ""
+"<p><strong>Invalid merchant keys</strong> </p>\n"
+"<p>The Public Key and Private Key entered<br>\n"
+"for the merchant are invalid.<br>\n"
+"You can find them in the Integrations section,<br>\n"
+"API Keys, in your Davipay Dashboard.</p>"
 
 #: classes/class-wc-agregador-epayco.php:185
 msgid "agregador Disabled"
-msgstr ""
+msgstr "agregador Disabled"
 
 #: classes/class-wc-agregador-epayco.php:189
 msgid "Servired/Davipay only support "
-msgstr ""
+msgstr "Servired/Davipay only support "
 
 #: classes/class-wc-agregador-epayco.php:207
 msgid "Habilitar/Deshabilitar"
-msgstr ""
+msgstr "Enable/Disable"
 
 #: classes/class-wc-agregador-epayco.php:209
 msgid "Habilitar Davipay"
-msgstr ""
+msgstr "Enable Davipay"
 
 #: classes/class-wc-agregador-epayco.php:213
 msgid "<span class=\"epayco-required\">Título</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">Title</span>"
 
 #: classes/class-wc-agregador-epayco.php:215
 msgid "Corresponde al título que el usuario ve durante el Checkout."
-msgstr ""
+msgstr "The title the user sees during checkout."
 
 #: classes/class-wc-agregador-epayco.php:216
 msgid "Checkout Davipay (Tarjetas de crédito,debito,efectivo)"
-msgstr ""
+msgstr "Davipay Checkout (Credit cards, debit cards, cash)"
 
 #: classes/class-wc-agregador-epayco.php:220
 msgid "<span class=\"epayco-required\">Descripción</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">Description</span>"
 
 #: classes/class-wc-agregador-epayco.php:222
 msgid "Corresponde a la descripción que verá el usuario durante el Checkout"
-msgstr ""
+msgstr "The description the user will see during checkout."
 
 #: classes/class-wc-agregador-epayco.php:223
 msgid "Checkout Davipay (Tarjetas de crédito,débito,efectivo)"
-msgstr ""
+msgstr "Davipay Checkout (Credit cards, debit cards, cash)"
 
 #: classes/class-wc-agregador-epayco.php:226
 msgid "<span class=\"epayco-required\">P_CUST_ID_CLIENTE</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">P_CUST_ID_CLIENTE</span>"
 
 #: classes/class-wc-agregador-epayco.php:228
 msgid ""
 "ID de cliente que lo identifica en Davipay. Lo puede encontrar en su panel de "
 "clientes en la opción configuración"
 msgstr ""
+"Customer ID that identifies you in Davipay. You can find it in your customer "
+"panel under Settings."
 
 #: classes/class-wc-agregador-epayco.php:234
 msgid "<span class=\"epayco-required\">P_KEY</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">P_KEY</span>"
 
 #: classes/class-wc-agregador-epayco.php:236
 msgid ""
 "LLave para firmar la información enviada y recibida de Davipay. Lo puede "
 "encontrar en su panel de clientes en la opción configuración"
 msgstr ""
+"Key used to sign the information sent to and received from Davipay. You can "
+"find it in your customer panel under Settings."
 
 #: classes/class-wc-agregador-epayco.php:242
 msgid "<span class=\"epayco-required\">PUBLIC_KEY</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">PUBLIC_KEY</span>"
 
 #: classes/class-wc-agregador-epayco.php:244
 #: classes/class-wc-agregador-epayco.php:252
@@ -158,129 +168,136 @@ msgid ""
 "LLave para autenticar y consumir los servicios de Davipay, Proporcionado en "
 "su panel de clientes en la opción configuración"
 msgstr ""
+"Key used to authenticate and consume Davipay services. Provided in your "
+"customer panel under Settings."
 
 #: classes/class-wc-agregador-epayco.php:250
 msgid "<span class=\"epayco-required\">PRIVATE_KEY</span>"
-msgstr ""
+msgstr "<span class=\"epayco-required\">PRIVATE_KEY</span>"
 
 #: classes/class-wc-agregador-epayco.php:258
 msgid "Sitio en pruebas"
-msgstr ""
+msgstr "Test site"
 
 #: classes/class-wc-agregador-epayco.php:260
 msgid "Habilitar el modo de pruebas"
-msgstr ""
+msgstr "Enable test mode"
 
 #: classes/class-wc-agregador-epayco.php:261
 msgid "Habilite para realizar pruebas"
-msgstr ""
+msgstr "Enable to run tests"
 
 #: classes/class-wc-agregador-epayco.php:265
 msgid "Tipo Checkout"
-msgstr ""
+msgstr "Checkout Type"
 
 #: classes/class-wc-agregador-epayco.php:268
 msgid "Seleccione un tipo de Checkout:"
-msgstr ""
+msgstr "Select a checkout type:"
 
 #: classes/class-wc-agregador-epayco.php:269
 msgid ""
 "(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standard "
 "Checkout, el usario al pagar es redireccionado a la pasarela de Davipay)"
 msgstr ""
+"(Onpage Checkout: the user stays on the site when paying) or (Standard "
+"Checkout: the user is redirected to the Davipay gateway when paying)"
 
 #: classes/class-wc-agregador-epayco.php:273
 msgid "Estado Final del Pedido"
-msgstr ""
+msgstr "Final Order Status"
 
 #: classes/class-wc-agregador-epayco.php:276
 msgid ""
 "Seleccione el estado del pedido que se aplicará a la hora de aceptar y "
 "confirmar el pago de la orden"
 msgstr ""
+"Select the order status to apply when the payment is accepted and confirmed."
 
 #: classes/class-wc-agregador-epayco.php:278
 msgid "Davipay Procesando Pago"
-msgstr ""
+msgstr "Davipay Processing Payment"
 
 #: classes/class-wc-agregador-epayco.php:279
 msgid "Davipay Pago Completado"
-msgstr ""
+msgstr "Davipay Payment Completed"
 
 #: classes/class-wc-agregador-epayco.php:280
 msgid "Procesando"
-msgstr ""
+msgstr "Processing"
 
 #: classes/class-wc-agregador-epayco.php:281
 msgid "Completado"
-msgstr ""
+msgstr "Completed"
 
 #: classes/class-wc-agregador-epayco.php:285
 msgid "Estado Cancelado del Pedido"
-msgstr ""
+msgstr "Canceled Order Status"
 
 #: classes/class-wc-agregador-epayco.php:288
 msgid ""
 "Seleccione el estado del pedido que se aplicará cuando la transacciónes "
 "Cancelada o Rechazada"
 msgstr ""
+"Select the order status to apply when the transaction is Canceled or "
+"Rejected."
 
 #: classes/class-wc-agregador-epayco.php:290
 msgid "Davipay Pago Cancelado"
-msgstr ""
+msgstr "Davipay Payment Canceled"
 
 #: classes/class-wc-agregador-epayco.php:291
 msgid "Davipay Pago Fallido"
-msgstr ""
+msgstr "Davipay Payment Failed"
 
 #: classes/class-wc-agregador-epayco.php:292
 msgid "Cancelado"
-msgstr ""
+msgstr "Canceled"
 
 #: classes/class-wc-agregador-epayco.php:293
 msgid "Fallido"
-msgstr ""
+msgstr "Failed"
 
 #: classes/class-wc-agregador-epayco.php:297
 msgid "Página de Respuesta"
-msgstr ""
+msgstr "Response Page"
 
 #: classes/class-wc-agregador-epayco.php:300
 msgid ""
 "Url de la tienda donde se redirecciona al usuario luego de pagar el pedido"
-msgstr ""
+msgstr "Store URL where the user is redirected after paying for the order."
 
 #: classes/class-wc-agregador-epayco.php:304
 msgid "Página de Confirmación"
-msgstr ""
+msgstr "Confirmation Page"
 
 #: classes/class-wc-agregador-epayco.php:307
 msgid "Url de la tienda donde Davipay confirma el pago"
-msgstr ""
+msgstr "Store URL where Davipay confirms the payment."
 
 #: classes/class-wc-agregador-epayco.php:311
 msgid "Reducir el stock en transacciones pendientes"
-msgstr ""
+msgstr "Reduce stock on pending transactions"
 
 #: classes/class-wc-agregador-epayco.php:315
 msgid "Habilite para reducir el stock en transacciones pendientes"
-msgstr ""
+msgstr "Enable to reduce stock on pending transactions"
 
 #: classes/class-wc-agregador-epayco.php:318
 msgid "Idioma del Checkout"
-msgstr ""
+msgstr "Checkout Language"
 
 #: classes/class-wc-agregador-epayco.php:321
 msgid "Seleccione el idioma del checkout"
-msgstr ""
+msgstr "Select the checkout language"
 
 #: classes/class-wc-agregador-epayco.php:326
 msgid "Habilitar envió de atributos a través de la URL de respuesta"
-msgstr ""
+msgstr "Enable sending attributes through the response URL"
 
 #: classes/class-wc-agregador-epayco.php:328
 msgid "Habilitar el modo redirección con data"
-msgstr ""
+msgstr "Enable redirect mode with data"
 
 #: classes/class-wc-agregador-epayco.php:329
 msgid ""
@@ -289,16 +306,21 @@ msgid ""
 "en el siguiente  <a href=\"https://docs.davipay.co/payments/checkout#scroll-"
 "response-p\" target=\"_blank\">link.</a>"
 msgstr ""
+"Enabling this option may expose sensitive information about your customers. "
+"Use of this option is at your own responsibility. Learn more at the "
+"following <a href=\"https://docs.davipay.co/payments/checkout#scroll-"
+"response-p\" target=\"_blank\">link.</a>"
 
 #: classes/class-wc-agregador-epayco.php:571
 msgid "Cargando métodos de pago"
-msgstr ""
+msgstr "Loading payment methods"
 
 #: classes/class-wc-agregador-epayco.php:572
 msgid ""
 "Si no se cargan automáticamente, haga clic en el botón \"Pagar con Davipay\""
 msgstr ""
+"If they don't load automatically, click the \"Pay with Davipay\" button"
 
 #: assets/js/frontend/blocks.js:9
 msgid "DavipayAgregador"
-msgstr ""
+msgstr "DavipayAgregador"

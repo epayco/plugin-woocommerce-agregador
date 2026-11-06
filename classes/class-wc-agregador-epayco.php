@@ -36,8 +36,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
     public function __construct()
     {
 
-        $this->id                   = 'epayco_agregador';
-
+        $this->id= 'epayco_agregador';
         //$this->version = '8.0.4';
         $logo_url_s3 = (defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '')
             ? DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg'
@@ -147,7 +146,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             <div style="color: #31708f; background-color: #d9edf7; border-color: #bce8f1;padding: 10px;border-radius: 5px;">
                 <?php esc_html_e('Este módulo le permite aceptar pagos seguros por la plataforma de pagos Davipay.Si el cliente decide pagar por Davipay, el estado del pedido cambiará a ', 'woo-epayco-agregador'); ?><b>
                     <?php esc_html_e(' Esperando Pago', 'woo-epayco-agregador'); ?></b>.
-                <br><?php esc_html_e('Cuando el pago sea Aceptado o Rechazado ePayco envía una confirmación a la tienda para cambiar el estado del pedido.', 'woo-epayco-agregador'); ?>
+                <br><?php esc_html_e('Cuando el pago sea Aceptado o Rechazado Davipay envía una confirmación a la tienda para cambiar el estado del pedido.', 'woo-epayco-agregador'); ?>
             </div>
 
             <?php if ($this->is_valid_for_use()) : ?>
@@ -582,31 +581,48 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             $bearerToken = ($tokenResponse && isset($tokenResponse['token'])) ? $tokenResponse['token'] : '';
             $newToken['token'] =  $bearerToken;
             $epayco_status_session = $this->getEpaycoSessionId($path, $payload, $newToken);
-            if ($epayco_status_session['success']) {
+         
+              if (is_array($epayco_status_session) && isset($epayco_status_session['success']) && $epayco_status_session['success']) {
                 if (isset($epayco_status_session['data']) && is_array($epayco_status_session['data'])) {
                     $sessionId =  $epayco_status_session['data']['sessionId'];
                     $payload['sessionId'] = $sessionId;
                 }
             } else {
-                $messageError = $epayco_status_session['textResponse'];
-                $errorMessage = "";
+                $messageError = '';
+                if (is_array($epayco_status_session) && isset($epayco_status_session['textResponse'])) {
+                    $messageError = $epayco_status_session['textResponse'];
+                } elseif (is_array($epayco_status_session) && isset($epayco_status_session['titleResponse'])) {
+                    $messageError = $epayco_status_session['titleResponse'];
+                }
+
+                $errorMessage = '';
                 if (isset($epayco_status_session['data']['errors'])) {
                     $errors = $epayco_status_session['data']['errors'];
                     if (is_array($errors)) {
                         foreach ($errors as $error) {
-                            $errorMessage = $error['errorMessage'] . "\n";
+                            if (isset($error['errorMessage'])) {
+                                $errorMessage .= $error['errorMessage'] . "\n";
+                            }
                         }
                     } else {
-                        $errorMessage = $errors . "\n";
+                        $errorMessage .= $errors . "\n";
                     }
                 } elseif (isset($epayco_status_session['data']['error']['errores'])) {
                     $errores = $epayco_status_session['data']['error']['errores'];
-                    foreach ($errores as $error) {
-                        $errorMessage = $error['errorMessage'] . "\n";
+                    if (is_array($errores)) {
+                        foreach ($errores as $error) {
+                            if (isset($error['errorMessage'])) {
+                                $errorMessage .= $error['errorMessage'] . "\n";
+                            }
+                        }
+                    } else {
+                        $errorMessage .= $errores . "\n";
                     }
                 }
-                //$processReturnFailMessage = $messageError . " " . $errorMessage;
-                $processReturnFailMessage =  $errorMessage;
+
+                $processReturnFailMessage = trim($errorMessage ?: $messageError ?: 'Ocurrió un error de pago.');
+
+                $processReturnFailMessage = nl2br(htmlspecialchars($processReturnFailMessage, ENT_QUOTES, 'UTF-8'));
                 echo sprintf(
                     '<div style="
                         display: flex;
@@ -614,9 +630,10 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         flex-direction: column;
                     ">
                     <div>
-                        <img style="width: 80px;" src="http://multimedia.epayco.io/plugins-sdks/admin/credentials/logos/warning/logo-credentials-warning.png" alt="" />                    </div>
+                    <img style="width: 80px;" src="http://multimedia.epayco.io/plugins-sdks/admin/credentials/logos/warning/logo-credentials-warning.png" alt="" />
+                    </div>
                     <div 
-                    style="text-align: center;font-size: large;font-weight: 900;">
+                    style="text-align: center;font-size: large;font-weight: 500;">
                         <p>"%s"</p>
                     </div>
                 </div>',
@@ -629,7 +646,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 "test" => $testMode
             ]));
             echo sprintf(
-                '<script>
+                '
+                <script
+                    src="https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js">
+                </script>
+                <script>
+                
                     var bntPagar = document.getElementById("btn_epayco");
                     const params = JSON.parse(atob("%s"));
                     let {
@@ -664,7 +686,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         ',
                 $checkout
             );
-            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout-v2.js', array(), '8.1.0', null);
+            wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js', array(), '8.4.7', null);
             wc_enqueue_js(
                 '
             jQuery("#btn_epayco_new").click(function(){
@@ -839,7 +861,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     exit();
                 }
 
-                $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
+                $url = 'https://eks-ms-checkout-transaction-service.epayco.io/validation/v1/reference/' . $ref_payco;
                 $response = wp_remote_get($url);
                 $body = wp_remote_retrieve_body($response);
                 $jsonData = @json_decode($body, true);
@@ -893,8 +915,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 switch ($x_cod_transaction_state) {
                     case 1: {
                             if ($isTestMode == "true") {
-                                $message = "Modo:pruebas, \nref_payco: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
-                                update_post_meta($order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
+                                $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
                                 update_post_meta($order->get_id(), 'modo_agregador', esc_attr('pruebas'));
                                 update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -918,8 +940,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                         break;
                                 }
                             } else {
-                                $message = "Modo:Producción, \nref_payco: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
-                                update_post_meta($order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
+                                $message = "Modo:Producción, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
                                 update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
                                 update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -999,13 +1021,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                             ) {
                             } else {
                                 if ($isTestMode == "true") {
-                                    $message = "Modo:pruebas, \nref_payco: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                    $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
                                     update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Pruebas'));
                                 } else {
-                                    $message = "Modo:Producción, \nref_payco: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                    $message = "Modo:Producción, \nref_dapay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
                                     update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
                                 }
-                                update_post_meta($order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
                                 update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
                                 update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
@@ -1045,14 +1067,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 EpaycoOrderAgregador::updateStockDiscount($order_id, 1);
                             }
                             if ($isTestMode == "true") {
-                                $message = "Modo:pruebas, \nref_payco: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
-                                update_post_meta($order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
+                                $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
                                 update_post_meta($order->get_id(), 'modo_agregador', esc_attr('pruebas'));
                                 update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
                                 update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                             } else {
-                                update_post_meta($order->get_id(), 'refPayco_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
                                 update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
                                 update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
                                 update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
@@ -1252,7 +1274,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         public function epayco_realizar_llamada_api($path, $data, $headers, $method = 'POST')
         {
-            $url = 'https://apify.epayco.co/' . $path;
+            $this->log = new WC_Logger();
+            $url = 'https://eks-apify-service.epayco.io/' . $path;
             //$this->log->add($this->id,"request : " .json_encode($data));
             $response = wp_remote_post($url, [
                 'headers' => $headers,
@@ -1288,7 +1311,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         {
             $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
             $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
-            $response = wp_remote_post('https://apify.epayco.co/login', array(
+            $response = wp_remote_post('https://eks-apify-service.epayco.io/login', array(
                 'headers' => array(
                     'Authorization' => 'Basic ' . base64_encode($username . ':' . $password),
                 ),

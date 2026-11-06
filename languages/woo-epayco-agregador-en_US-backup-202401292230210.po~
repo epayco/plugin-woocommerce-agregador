@@ -58,11 +58,11 @@ msgid ""
 msgstr ""
 "This module allows you to accept secure payments through the Davipay payment "
 "platform. If the customer decides to pay by Davipay, the order status will "
-"change to"
+"change to "
 
 #: classes/class-wc-agregador-epayco.php:125
 msgid " Esperando Pago"
-msgstr "Waiting for payment"
+msgstr " Waiting for payment"
 
 #: classes/class-wc-agregador-epayco.php:126
 msgid ""
@@ -91,11 +91,11 @@ msgid ""
 "                                        Llaves API en su Dashboard Davipay."
 "</p>"
 msgstr ""
-"<p><strong>Invalid trade keys</strong> </p>\n"
-"<p>Public Key, Private Key keys inserted<br>\n"
-"of commerce are invalid.<br>\n"
-"Consult them in the integrations section <br>\n"
-"API keys in your Davipay Dashboard.</p>"
+"<p><strong>Invalid merchant keys</strong> </p>\n"
+"<p>The Public Key and Private Key entered<br>\n"
+"for the merchant are invalid.<br>\n"
+"You can find them in the Integrations section, <br>\n"
+"API Keys, in your Davipay Dashboard.</p>"
 
 #: classes/class-wc-agregador-epayco.php:185
 msgid "agregador Disabled"
@@ -123,7 +123,7 @@ msgstr "It corresponds to the title that the user sees during Checkout."
 
 #: classes/class-wc-agregador-epayco.php:216
 msgid "Checkout Davipay (Tarjetas de crédito,debito,efectivo)"
-msgstr "Loading payment methods"
+msgstr "Checkout Davipay (Credit cards, debit cards, cash)"
 
 #: classes/class-wc-agregador-epayco.php:220
 msgid "<span class=\"epayco-required\">Descripción</span>"
@@ -232,7 +232,7 @@ msgstr "Processing"
 
 #: classes/class-wc-agregador-epayco.php:281
 msgid "Completado"
-msgstr " Ccomplete"
+msgstr "Completed"
 
 #: classes/class-wc-agregador-epayco.php:285
 msgid "Estado Cancelado del Pedido"
@@ -256,7 +256,7 @@ msgstr "Davipay Payment Failed"
 
 #: classes/class-wc-agregador-epayco.php:292
 msgid "Cancelado"
-msgstr "Cancelled"
+msgstr "Canceled"
 
 #: classes/class-wc-agregador-epayco.php:293
 msgid "Fallido"
@@ -310,9 +310,9 @@ msgid ""
 "en el siguiente  <a href=\"https://docs.davipay.co/payments/checkout#scroll-"
 "response-p\" target=\"_blank\">link.</a>"
 msgstr ""
-"By enabling this option you may expose sensitive information of your clients,"
-" the use of this option is under your responsibility, know this information "
-"in the following <a href=\"https://docs.davipay.co/payments/checkout#scroll-"
+"Enabling this option may expose sensitive information about your customers. "
+"Use of this option is at your own responsibility. Learn more at the "
+"following <a href=\"https://docs.davipay.co/payments/checkout#scroll-"
 "response-p\" target=\"_blank\">link.</a>"
 
 #: classes/class-wc-agregador-epayco.php:571
