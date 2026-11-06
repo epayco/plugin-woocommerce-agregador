@@ -13,7 +13,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
      * @access public
      * @return void
      */
-    
+
     public $msg;
     public $epayco_agregador_customerid;
     public $epayco_agregador_secretkey;
@@ -39,9 +39,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         $this->id                   = 'epayco_agregador';
 
         //$this->version = '8.0.4';
-        $this->icon = apply_filters('woocommerce_' . $this->id . '_icon', 'https://multimedia.epayco.co/plugins-sdks/paymentLogo.svg');
-        $this->method_title         = __('ePayco Checkout', 'woo-epayco-agregador');
-        $this->method_description   = __('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador');
+        $logo_url_s3 = (defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '')
+            ? DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg'
+            : CMS_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg';
+        $this->icon = apply_filters('woocommerce_' . $this->id . '_icon', $logo_url_s3);
+        $this->method_title         = __('Davipay Checkout', 'woo-epayco-agregador');
+        $this->method_description   = __('Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador');
 
         $this->order_button_text = __('Pagar', 'woo-epayco-agregador');
         $this->has_fields           = false;
@@ -126,7 +129,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         <div class="container-fluid">
             <div class="panel panel-default" style="">
-                <img src="https://multimedia.epayco.co/plugins-sdks/logo.png">
+                <img src="<?php echo esc_url((defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '') ? DAVIPAY_ROUTE_IMAGES_S3 . 'Imagotipo/checkoutSmallWhite_01_v1.svg' : CMS_ROUTE_IMAGES_S3 . 'checkoutSmallWhite_01_v1.svg'); ?>">
+
                 <div id="path_upload" hidden>
                     <?php esc_html_e($logo_url, 'text_domain'); ?>
                 </div>
@@ -137,11 +141,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     <?php esc_html_e($validation_url, 'text_domain'); ?>
                 </div>
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="fa fa-pencil"></i><?php esc_html_e('Configuración Epayco', 'woo-epayco-agregador'); ?></h3>
-                </div>ePayco
+                    <h3 class="panel-title"><i class="fa fa-pencil"></i><?php esc_html_e('Configuración Davipay', 'woo-epayco-agregador'); ?></h3>
+                </div>
             </div>
             <div style="color: #31708f; background-color: #d9edf7; border-color: #bce8f1;padding: 10px;border-radius: 5px;">
-                <?php esc_html_e('Este módulo le permite aceptar pagos seguros por la plataforma de pagos ePayco.Si el cliente decide pagar por ePayco, el estado del pedido cambiará a ', 'woo-epayco-agregador'); ?><b>
+                <?php esc_html_e('Este módulo le permite aceptar pagos seguros por la plataforma de pagos Davipay.Si el cliente decide pagar por Davipay, el estado del pedido cambiará a ', 'woo-epayco-agregador'); ?><b>
                     <?php esc_html_e(' Esperando Pago', 'woo-epayco-agregador'); ?></b>.
                 <br><?php esc_html_e('Cuando el pago sea Aceptado o Rechazado ePayco envía una confirmación a la tienda para cambiar el estado del pedido.', 'woo-epayco-agregador'); ?>
             </div>
@@ -173,13 +177,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 <div class="modal-content">
                                     <span class="close">&times;</span>
                                     <center>
-                                        <img src="'.$logo.'">
+                                        <img src="<?php echo DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png' ?>">
                                     </center>
                                     <p><strong>Llaves de comercio inválidas</strong> </p>
                                     <p>Las llaves Public Key, Private Key insertadas<br>
                                         del comercio son inválidas.<br>
                                         Consúltelas en el apartado de integraciones <br>
-                                        Llaves API en su Dashboard ePayco.</p>
+                                        Llaves API en su Dashboard Davipay.</p>
                                 </div>
                             </div>
 
@@ -206,7 +210,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         ?>
                 </strong>:
                 <?php
-                esc_html_e('Servired/Epayco only support ', 'woo-epayco-agregador');
+                esc_html_e('Servired/Davipay only support ', 'woo-epayco-agregador');
                 echo esc_html($formated_currencies);
                 ?>
             </p>
@@ -226,34 +230,34 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 'enabled'          => array(
                     'title'   => __('Habilitar/Deshabilitar', 'woo-epayco-agregador'),
                     'type'    => 'checkbox',
-                    'label'   => __('Habilitar ePayco', 'woo-epayco-agregador'),
+                    'label'   => __('Habilitar Davipay', 'woo-epayco-agregador'),
                     'default' => 'yes',
                 ),
                 'title'            => array(
                     'title'       => __('<span class="epayco-required">Título</span>', 'woo-epayco-agregador'),
                     'type'        => 'text',
                     'description' => __('Corresponde al título que el usuario ve durante el Checkout.', 'woo-epayco-agregador'),
-                    'default'     => __('Paga con ePayco', 'woo-epayco-agregador'),
+                    'default'     => __('Paga con Davipay', 'woo-epayco-agregador'),
                     'desc_tip'    => true,
                 ),
                 'description'      => array(
                     'title'       => __('<span class="epayco-required">Descripción</span>', 'woo-epayco-agregador'),
                     'type'        => 'textarea',
                     'description' => __('Corresponde a la descripción que verá el usuario durante el Checkout', 'woo-epayco-agregador'),
-                    'default'     => __('ePayco: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador'),
+                    'default'     => __('Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador'),
                 ),
                 'epayco_agregador_customerid' => array(
                     'title'       => __('<span class="epayco-required">P_CUST_ID_CLIENTE</span>', 'woo-epayco-agregador'),
                     'type'        => 'text',
-                    'description' => __('ID de cliente que lo identifica en ePayco. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'description' => __('ID de cliente que lo identifica en Davipay. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
                     'default' => '',
                     //'desc_tip' => true,
                     'placeholder' => '',
                 ),
                 'epayco_agregador_secretkey' => array(
-                    'title'       => __('<span class="epayco-required">P_KEY</span>', 'woo-epayco-agregador'),
+                    'title'       => __('<span class="epayco-required">P_KEY</span>', 'woo-Davipay-agregador'),
                     'type'        => 'text',
-                    'description' => __('LLave para firmar la información enviada y recibida de ePayco. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'description' => __('LLave para firmar la información enviada y recibida de Davipay. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
                     'default' => '',
                     //'desc_tip' => true,
                     'placeholder' => '',
@@ -261,7 +265,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 'epayco_agregador_publickey' => array(
                     'title'       => __('<span class="epayco-required">PUBLIC_KEY</span>', 'woo-epayco-agregador'),
                     'type'        => 'text',
-                    'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'description' => __('LLave para autenticar y consumir los servicios de Davipay, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
                     'default' => '',
                     //'desc_tip' => true,
                     'placeholder' => '',
@@ -269,7 +273,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 'epayco_agregador_privatekey' => array(
                     'title'       => __('<span class="epayco-required">PRIVATE_KEY</span>', 'woo-epayco-agregador'),
                     'type'        => 'text',
-                    'description' => __('LLave para autenticar y consumir los servicios de ePayco, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'description' => __('LLave para autenticar y consumir los servicios de Davipay, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
                     'default' => '',
                     //'desc_tip' => true,
                     'placeholder' => '',
@@ -286,7 +290,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'type'        => 'select',
                     'css' => 'line-height: inherit',
                     'label' => __('Seleccione un tipo de Checkout:', 'woo-epayco-agregador'),
-                    'description' => __('(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standard Checkout, el usario al pagar es redireccionado a la pasarela de ePayco)', 'woo-epayco-agregador'),
+                    'description' => __('(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standard Checkout, el usario al pagar es redireccionado a la pasarela de Davipay)', 'woo-epayco-agregador'),
                     'options' => array('false' => "Onpage Checkout", "true" => "Standard Checkout"),
                 ),
                 'epayco_agregador_endorder_state'     => array(
@@ -295,8 +299,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'css' => 'line-height: inherit',
                     'description' => __('Seleccione el estado del pedido que se aplicará a la hora de aceptar y confirmar el pago de la orden', 'woo-epayco-agregador'),
                     'options' => array(
-                        'epayco-processing' => __('ePayco Procesando Pago', 'woo-epayco-agregador'),
-                        "epayco-completed" => __('ePayco Pago Completado', 'woo-epayco-agregador'),
+                        'epayco-processing' => __('Davipay Procesando Pago', 'woo-epayco-agregador'),
+                        "epayco-completed" => __('Davipay Pago Completado', 'woo-epayco-agregador'),
                         'processing' => __('Procesando', 'woo-epayco-agregador'),
                         "completed" => __('Completado', 'woo-epayco-agregador')
                     ),
@@ -307,8 +311,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'css' => 'line-height: inherit',
                     'description' => __('Seleccione el estado del pedido que se aplicará cuando la transacciónes Cancelada o Rechazada', 'woo-epayco-agregador'),
                     'options' => array(
-                        'epayco_agregador-cancelled' => __('ePayco Pago Cancelado', 'woo-epayco-agregador'),
-                        "epayco_agregador-failed" => __('ePayco Pago Fallido', 'woo-epayco-agregador'),
+                        'epayco_agregador-cancelled' => __('Davipay Pago Cancelado', 'woo-epayco-agregador'),
+                        "epayco_agregador-failed" => __('Davipay Pago Fallido', 'woo-epayco-agregador'),
                         'cancelled' => __('Cancelado', 'woo-epayco-agregador'),
                         "failed" => __('Fallido', 'woo-epayco-agregador')
                     ),
@@ -324,7 +328,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'title'       => __('Página de Confirmación', 'woo-epayco-agregador'),
                     'type'        => 'select',
                     'css' => 'line-height: inherit',
-                    'description' => __('Url de la tienda donde ePayco confirma el pago', 'woo-epayco-agregador'),
+                    'description' => __('Url de la tienda donde Davipay confirma el pago', 'woo-epayco-agregador'),
                     'options'       => $this->get_pages(__('Seleccionar pagina', 'epayco-woocommerce')),
                 ),
                 'epayco_agregador_reduce_stock_pending'    => array(
@@ -346,7 +350,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'title'       => __('Habilitar envió de atributos a través de la URL de respuesta', 'woo-epayco-agregador'),
                     'type' => 'checkbox',
                     'label' => __('Habilitar el modo redirección con data', 'woo-epayco-agregador'),
-                    'description' => __('Al habilitar esta opción puede exponer información sensible de sus clientes, el uso de esta opción es bajo su responsabilidad, conozca esta información en el siguiente  <a href="https://docs.epayco.co/payments/checkout#scroll-response-p" target="_blank">link.</a>', 'woo-epayco-agregador'),
+                    'description' => __('Al habilitar esta opción puede exponer información sensible de sus clientes, el uso de esta opción es bajo su responsabilidad, conozca esta información en el siguiente  <a href="https://docs.davipay.co/payments/checkout#scroll-response-p" target="_blank">link.</a>', 'woo-epayco-agregador'),
                     'default'     => 'no',
                 ),
                 /*'monto_maximo' => array(
@@ -365,12 +369,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'default' => 'no',
                 ),
                 'split_payment_type' => array(
-                'title' => __('Tipo de splitpayment', 'epayco_agregador_woocommerce'),
-                'type' => 'select',
-                'css' =>'line-height: inherit',
-                'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
-                'options' => array('02' => 'porcentaje','01' => 'fijo'),
-            ),
+                    'title' => __('Tipo de splitpayment', 'epayco_agregador_woocommerce'),
+                    'type' => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
+                    'options' => array('02' => 'porcentaje', '01' => 'fijo'),
+                ),
             );
             $epayco_langs   = array(
                 '1'      => 'Español',
@@ -468,12 +472,12 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                             $receiversa['tax'] = round($product_tax, 2);
                             $receiversa['taxBase'] = round($taxBase, 2);
                             $receiversa['fee'] = isset($epayco_fee[0]) ? round(floatval($epayco_fee[0]), 2) : 0;
-                            
+
                             if ($epayco_p_cust_id_client[0]) {
                                 array_push($receiversData, $receiversa);
                             }
                         }
-                    } 
+                    }
                 }
                 $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
                 $descripcionParts[] = $clearData;
@@ -523,51 +527,51 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             $date = new DateTimeImmutable();
             //$date->getTimestamp()
             $payload  = array(
-                "test"=>$testMode,
-                "name"=>$descripcion,
-                "description"=>$descripcion,
-                "invoice"=>(string)$order->get_id(),
-                "currency"=>$currency,
-                "amount"=>floatval($order->get_total()),
-                "taxBase"=>floatval($base_tax),
-                "tax"=>floatval($tax),
-                "taxIco"=>floatval($ico),
-                "country"=>$basedCountry,
-                "lang"=>$lang,
-                "confirmation"=>$confirm_url,
-                "response"=>$redirect_url,
+                "test" => $testMode,
+                "name" => $descripcion,
+                "description" => $descripcion,
+                "invoice" => (string)$order->get_id(),
+                "currency" => $currency,
+                "amount" => floatval($order->get_total()),
+                "taxBase" => floatval($base_tax),
+                "tax" => floatval($tax),
+                "taxIco" => floatval($ico),
+                "country" => $basedCountry,
+                "lang" => $lang,
+                "confirmation" => $confirm_url,
+                "response" => $redirect_url,
                 "billing" => [
                     "name" => $name_billing,
                     "address" => $address_billing,
                     "email" => $email_billing,
                     "mobilePhone" => $phone_billing
                 ],
-                "ip"=>$myIp,
-                 "extras" => [
+                "ip" => $myIp,
+                "extras" => [
                     "extra1" => (string)$order->get_id(),
                 ],
                 "extrasEpayco" => [
                     "extra5" => "P20"
                 ],
                 "epaycoMethodsDisable" => [],
-                "method"=> "POST",
-                "checkout_version"=>"2",
+                "method" => "POST",
+                "checkout_version" => "2",
                 "autoClick" => false,
-                "noRedirectOnClose"=> true,
-                "forceResponse"=>false,//mostrar detalle de orden
-                "uniqueTransactionPerBill"=> false,
+                "noRedirectOnClose" => true,
+                "forceResponse" => false, //mostrar detalle de orden
+                "uniqueTransactionPerBill" => false,
             );
 
-            if($isSplit){
-                if($epayco_tipe_split == "02"){
+            if ($isSplit) {
+                if ($epayco_tipe_split == "02") {
                     $payload["splitPayment"] = [
-                        "type" =>"percentage",
-                        "receivers" =>$receivers
+                        "type" => "percentage",
+                        "receivers" => $receivers
                     ];
-                }else{
+                } else {
                     $payload["splitPayment"] = [
-                        "type" =>"amount",
-                        "receivers" =>$receivers
+                        "type" => "amount",
+                        "receivers" => $receivers
                     ];
                 }
             }
@@ -577,23 +581,23 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             $tokenResponse = $this->epyacoBerarToken();
             $bearerToken = ($tokenResponse && isset($tokenResponse['token'])) ? $tokenResponse['token'] : '';
             $newToken['token'] =  $bearerToken;
-            $epayco_status_session = $this->getEpaycoSessionId($path,$payload, $newToken);
+            $epayco_status_session = $this->getEpaycoSessionId($path, $payload, $newToken);
             if ($epayco_status_session['success']) {
                 if (isset($epayco_status_session['data']) && is_array($epayco_status_session['data'])) {
                     $sessionId =  $epayco_status_session['data']['sessionId'];
                     $payload['sessionId'] = $sessionId;
                 }
-            }else{
+            } else {
                 $messageError = $epayco_status_session['textResponse'];
                 $errorMessage = "";
                 if (isset($epayco_status_session['data']['errors'])) {
                     $errors = $epayco_status_session['data']['errors'];
-                    if(is_array($errors)){
+                    if (is_array($errors)) {
                         foreach ($errors as $error) {
                             $errorMessage = $error['errorMessage'] . "\n";
                         }
-                    }else{
-                        $errorMessage = $errors. "\n";
+                    } else {
+                        $errorMessage = $errors . "\n";
                     }
                 } elseif (isset($epayco_status_session['data']['error']['errores'])) {
                     $errores = $epayco_status_session['data']['error']['errores'];
@@ -603,15 +607,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 }
                 //$processReturnFailMessage = $messageError . " " . $errorMessage;
                 $processReturnFailMessage =  $errorMessage;
-                 echo sprintf(
-                '<div style="
+                echo sprintf(
+                    '<div style="
                         display: flex;
                         align-items: center;
                         flex-direction: column;
                     ">
                     <div>
-                    <img style="width: 80px;" src="https://multimedia-epayco-preprod.s3.us-east-1.amazonaws.com/plugins-sdks/warning.png" alt="" />
-                    </div>
+                        <img style="width: 80px;" src="http://multimedia.epayco.io/plugins-sdks/admin/credentials/logos/warning/logo-credentials-warning.png" alt="" />                    </div>
                     <div 
                     style="text-align: center;font-size: large;font-weight: 900;">
                         <p>"%s"</p>
@@ -621,10 +624,10 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 );
             }
             $checkout =  base64_encode(json_encode([
-                "sessionId"=>$payload['sessionId'],
-                "external"=>$external,
-                "test"=>$testMode
-            ]));              
+                "sessionId" => $payload['sessionId'],
+                "external" => $external,
+                "test" => $testMode
+            ]));
             echo sprintf(
                 '<script>
                     var bntPagar = document.getElementById("btn_epayco");
@@ -659,9 +662,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
             </form>
         </center>
         ',
-            $checkout
+                $checkout
             );
-            wp_enqueue_script('epayco',  'https://epayco-checkout-testing.s3.amazonaws.com/checkout.preprod-v2.js', array(), '8.1.0', null);
+            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout-v2.js', array(), '8.1.0', null);
             wc_enqueue_js(
                 '
             jQuery("#btn_epayco_new").click(function(){
@@ -673,23 +676,24 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 		        </form>';
         }
 
-        function get_product_tax_rate_percentage( $product_id ) {
-            $product = wc_get_product( $product_id );
-            if ( ! $product ) return 0;
+        function get_product_tax_rate_percentage($product_id)
+        {
+            $product = wc_get_product($product_id);
+            if (! $product) return 0;
 
             // Clase de impuesto asignada al producto
             $tax_class = $product->get_tax_class(); // Ej: 'reduced-rate' o ''
-            
-            // Obtener tarifas para esa clase de impuesto
-            $tax_rates = WC_Tax::get_rates( $tax_class );
 
-            if ( empty( $tax_rates ) ) {
+            // Obtener tarifas para esa clase de impuesto
+            $tax_rates = WC_Tax::get_rates($tax_class);
+
+            if (empty($tax_rates)) {
                 return 0;
             }
 
             // Obtener el primer porcentaje de la lista
-            $rate = reset( $tax_rates );
-            return isset( $rate['rate'] ) ? floatval( $rate['rate'] ) : 0;
+            $rate = reset($tax_rates);
+            return isset($rate['rate']) ? floatval($rate['rate']) : 0;
         }
         /**
          * Process the payment and return the result
@@ -718,13 +722,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 </div>
                 <p style="text-align: center;" class="epayco-title">
                     <span class="animated-points">' . esc_html__('Cargando métodos de pago', 'woo-epayco-agregador') . '</span>
-                    <br><small class="epayco-subtitle"> ' . esc_html__('', 'woo-epayco-agregador') . '</small>
+                    <br><small class="epayco-subtitle"> ' . esc_html__('Si no se cargan automáticamente, haga clic en el botón. Pagar con Davipay', 'woo-epayco-agregador') . '</small>
                 </p>';
 
             if ($this->epayco_agregador_lang === "2") {
-                $epaycoButtonImage = 'https://multimedia.epayco.co/plugins-sdks/Boton-color-Ingles.png';
+                 $epaycoButtonImage =  DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-ing.png';
             } else {
-                $epaycoButtonImage = 'https://multimedia.epayco.co/plugins-sdks/Boton-color-espanol.png';
+                  $epaycoButtonImage =  DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-es.png';
             }
 
             echo '<p>       
@@ -750,7 +754,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 header('HTTP/1.1 200 OK');
                 do_action('valid-' . $this->id . '-standard-ipn-request', $post);
             } else {
-                wp_die('Do not access this page directly (ePayco)');
+                wp_die('Do not access this page directly (Davipay)');
             }
         }
 
@@ -761,16 +765,16 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 header('HTTP/1.1 200 OK');
                 do_action("ePayco_Agregador_init_validation", $_REQUEST);
             } else {
-                wp_die('Do not access this page directly (ePayco)');
+                wp_die('Do not access this page directly (Davipay)');
             }
         }
 
-        public function getEpaycoSessionId($path,$data, $token)
+        public function getEpaycoSessionId($path, $data, $token)
         {
             if ($token) {
                 $headers = [
                     'Content-Type'  => 'application/json',
-                    'Authorization' => 'Bearer '.$token['token'],
+                    'Authorization' => 'Bearer ' . $token['token'],
                 ];
                 return $this->epayco_realizar_llamada_api($path, $data, $headers);
             }
@@ -835,7 +839,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     exit();
                 }
 
-                $url = 'https://eks-checkout-service.epayco.io/validation/v1/reference/' . $ref_payco;
+                $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
                 $response = wp_remote_get($url);
                 $body = wp_remote_retrieve_body($response);
                 $jsonData = @json_decode($body, true);
@@ -1248,7 +1252,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
         public function epayco_realizar_llamada_api($path, $data, $headers, $method = 'POST')
         {
-            $url = 'https://eks-apify-service.epayco.io/' . $path;
+            $url = 'https://apify.epayco.co/' . $path;
             //$this->log->add($this->id,"request : " .json_encode($data));
             $response = wp_remote_post($url, [
                 'headers' => $headers,
@@ -1258,8 +1262,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
             if (is_wp_error($response)) {
                 $error_message = $response->get_error_message();
-                $this->log->add($this->id, "Error al hacer la llamada a la API de ePayco: " . $error_message);
-                error_log("Error al hacer la llamada a la API de ePayco: " . $error_message);
+                $this->log->add($this->id, "Error al hacer la llamada a la API de Davipay: " . $error_message);
+                error_log("Error al hacer la llamada a la API de Davipay: " . $error_message);
                 return false;
             } else {
                 $response_body = wp_remote_retrieve_body($response);
@@ -1269,10 +1273,10 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     $responseTransaction = json_decode($response_body, true);
                     return $responseTransaction;
                 } else {
-                    $this->log->add($this->id,"Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
-                    error_log("Error en la respuesta de la API de ePayco, código de estado: " . $status_code);
-                    $this->log->add($this->id,"Error en la respuesta de la API de ePayco, : " . $response_body);
-                    error_log("Error en la respuesta de la API de ePayco, : " . $response_body);
+                    $this->log->add($this->id, "Error en la respuesta de la API de Davipay, código de estado: " . $status_code);
+                    error_log("Error en la respuesta de la API de Davipay, código de estado: " . $status_code);
+                    $this->log->add($this->id, "Error en la respuesta de la API de Davipay, : " . $response_body);
+                    error_log("Error en la respuesta de la API de Davipay, : " . $response_body);
                     return false;
                 }
             }
@@ -1284,7 +1288,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         {
             $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
             $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
-            $response = wp_remote_post('https://eks-apify-service.epayco.io/login', array(
+            $response = wp_remote_post('https://apify.epayco.co/login', array(
                 'headers' => array(
                     'Authorization' => 'Basic ' . base64_encode($username . ':' . $password),
                 ),
