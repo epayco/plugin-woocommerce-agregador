@@ -1,7 +1,7 @@
-=== ePayco plugin for WooCommerce ===
-Contributors: ePayco Team
-Donate link: https://epayco.com/
-Tags: e-commerce, commerce, wordpress ecommerce, store, sales, sell, shop, shopping, cart, checkout, configurable, epayco
+=== Davipay plugin for WooCommerce ===
+Contributors: Davipay Team
+Donate link: https://davipay.com/
+Tags: e-commerce, commerce, wordpress ecommerce, store, sales, sell, shop, shopping, cart, checkout, configurable, davipay
 Requires at least: 7.4
 Tested up to: 6.8.3
 Stable tag: 8.1.0
@@ -13,8 +13,7 @@ Receive payments, accept credit cards, deposits and transfers.
 
 == Description ==
 
-
-ePayco helps you grow your business with rates tailored to your needs.
+Davipay helps you grow your business with rates tailored to your needs.
 Receive payments, accept credit cards, deposits and transfers.
 
 == Installation ==
@@ -24,8 +23,8 @@ Receive payments, accept credit cards, deposits and transfers.
 3. Enter Plugins / Add-New / Upload-Plugin.
 4. Find the plugin downloaded on your computer and upload it like any other file.
 5. After installing the .zip you can see it in the list of installed plugins, you can activate or deactivate it.
-6. To configure the plugin you must go to: WooCommerce / Settings / Payments and Locate the tab ePayco.
-7. Configure the plugin by entering P_CUST_ID_CLIENTE, P_KEY, PUBLIC_KEY and PRIVATE_KEY provided by ePayco
+6. To configure the plugin you must go to: WooCommerce / Settings / Payments and Locate the tab Davipay.
+7. Configure the plugin by entering P_CUST_ID_CLIENTE, P_KEY, PUBLIC_KEY and PRIVATE_KEY provided by Davipay
 8. Save Changes, if you have not done the configuration correctly you will be shown a warning, pay attention to this.
 
 
@@ -48,5 +47,8 @@ Yes. But it is advisable that you consider using it since it is revealing for br
 = 6.0.0 =
 * Initial stable release
 
+= 8.1.0 =
+* update Davipay checkout v2
+
 == Additional Info ==
-**Contribute** [repository on github](https://github.com/epayco/Plugin_ePayco_WooCommerce)
+**Contribute** [repository on github](https://github.com/davipay/plugin-woocommerce-agregador)
