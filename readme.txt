@@ -51,4 +51,4 @@ Yes. But it is advisable that you consider using it since it is revealing for br
 * update Davipay checkout v2
 
 == Additional Info ==
-**Contribute** [repository on github](https://github.com/epayco/plugin-woocommerce-agregador)
+**Contribute** [repository on github](https://github.com/davipay/plugin-woocommerce-agregador)
