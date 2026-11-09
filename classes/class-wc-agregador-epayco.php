@@ -669,10 +669,10 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     }
                     checkout.onErrors(errors => {
                         console.error(errors);
-                        console.log("Evento que notifica un error en la integración");
+                        console.log("Event notifying that an error has occurred in the integration");
                     });
                     checkout.onClosed(() => {
-                        console.log("Evento que notifica cuando se cierra el checkout");
+                        console.log("Event notifying that the checkout has been closed");
                     });
                     var openChekout = function () {
                         bntPagar.style.pointerEvents = "none";
@@ -1187,7 +1187,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         $current_state == "completed"
                     ) {
                     } else {
-                        $message = 'Firma no valida';
+                        $message = 'Invalid signature';
                         $orderStatus = 'epayco-failed';
                         if ($x_cod_transaction_state != 1 && !empty($x_cod_transaction_state)) {
                             if (
@@ -1205,7 +1205,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 $messageClass = 'error';
                             }
                         }
-                        echo $x_cod_transaction_state . " firma no valida: " . $validation;
+                        echo $x_cod_transaction_state . " Invalid signature " . $validation;
                     }
                 }
             }
@@ -1285,8 +1285,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
             if (is_wp_error($response)) {
                 $error_message = $response->get_error_message();
-                $this->log->add($this->id, "Error al hacer la llamada a la API de Davipay: " . $error_message);
-                error_log("Error al hacer la llamada a la API de Davipay: " . $error_message);
+                $this->log->add($this->id, "Error when making the API call to Davipay:" . $error_message);
+                error_log("Error when making the API call to Davipay:" . $error_message);
                 return false;
             } else {
                 $response_body = wp_remote_retrieve_body($response);
@@ -1296,10 +1296,10 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     $responseTransaction = json_decode($response_body, true);
                     return $responseTransaction;
                 } else {
-                    $this->log->add($this->id, "Error en la respuesta de la API de Davipay, código de estado: " . $status_code);
-                    error_log("Error en la respuesta de la API de Davipay, código de estado: " . $status_code);
-                    $this->log->add($this->id, "Error en la respuesta de la API de Davipay, : " . $response_body);
-                    error_log("Error en la respuesta de la API de Davipay, : " . $response_body);
+                    $this->log->add($this->id, "Error in the Davipay API response, status code " . $status_code);
+                    error_log("Error in the Davipay API response, status code " . $status_code);
+                    $this->log->add($this->id, "Error in the Davipay API response: " . $response_body);
+                    error_log("Error in the Davipay API response: " . $response_body);
                     return false;
                 }
             }
