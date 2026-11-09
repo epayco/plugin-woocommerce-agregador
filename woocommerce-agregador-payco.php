@@ -115,7 +115,11 @@ function woocommerce_agregador_epayco_block_support() {
 add_action( 'woocommerce_blocks_loaded', 'woocommerce_agregador_epayco_block_support' );
 
 function epayco_agregador_woocommerce_addon_settings_link( $links ) {
-    array_push( $links, '<a href="admin.php?page=wc-settings&tab=checkout&section=epayco_agregador">' . __( 'Configuración' ) . '</a>' );
+    $locale = determine_locale(); 
+    $label = ( strpos( $locale, 'es' ) === 0 ) ? 'Configuración' : 'Settings';
+    $settings_url = admin_url('admin.php?page=wc-settings&tab=checkout&section=epayco_agregador');
+    array_push( $links, '<a href="' . esc_url( $settings_url ) . '">' . esc_html( $label ) . '</a>' );
+
     return $links;
 }
 
