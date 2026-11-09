@@ -164,9 +164,9 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                             <form method="post" action="#">
                                 <label for="woocommerce_epayco_agregador_enabled">
                                 </label>
-                                <input type="button" class="button-primary woocommerce-save-button validarA" value="Validar">
+                                <input type="button" class="button-primary woocommerce-save-button validarA" value="<?php echo esc_attr__('Validar', 'woo-epayco-agregador'); ?>">
                                 <p class="description">
-                                    Validación de llaves PUBLIC_KEY y PRIVATE_KEY
+                                    <?php esc_html_e('Validación de llaves PUBLIC_KEY y PRIVATE_KEY', 'woo-epayco-agregador'); ?>
                                 </p>
                             </form>
                             <br>
@@ -178,11 +178,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                     <center>
                                         <img src="<?php echo DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png' ?>">
                                     </center>
-                                    <p><strong>Llaves de comercio inválidas</strong> </p>
-                                    <p>Las llaves Public Key, Private Key insertadas<br>
-                                        del comercio son inválidas.<br>
-                                        Consúltelas en el apartado de integraciones <br>
-                                        Llaves API en su Dashboard Davipay.</p>
+                                    <p><strong><?php esc_html_e('Llaves de comercio inválidas', 'woo-epayco-agregador'); ?></strong> </p>
+                                    <p><?php esc_html_e('Las llaves Public Key, Private Key insertadas', 'woo-epayco-agregador'); ?><br>
+                                        <?php esc_html_e('del comercio son inválidas.', 'woo-epayco-agregador'); ?><br>
+                                        <?php esc_html_e('Consúltelas en el apartado de integraciones', 'woo-epayco-agregador'); ?> <br>
+                                        <?php esc_html_e('Llaves API en su Dashboard Davipay.', 'woo-epayco-agregador'); ?></p>
                                 </div>
                             </div>
 
@@ -254,7 +254,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'placeholder' => '',
                 ),
                 'epayco_agregador_secretkey' => array(
-                    'title'       => __('<span class="epayco-required">P_KEY</span>', 'woo-Davipay-agregador'),
+                    'title'       => __('<span class="epayco-required">P_KEY</span>', 'woo-epayco-agregador'),
                     'type'        => 'text',
                     'description' => __('LLave para firmar la información enviada y recibida de Davipay. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
                     'default' => '',
@@ -321,14 +321,14 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     'type'        => 'select',
                     'css' => 'line-height: inherit',
                     'description' => __('Url de la tienda donde se redirecciona al usuario luego de pagar el pedido', 'woo-epayco-agregador'),
-                    'options'       => $this->get_pages(__('Seleccionar pagina', 'epayco-woocommerce')),
+                    'options'       => $this->get_pages(__('Seleccionar pagina', 'woo-epayco-agregador')),
                 ),
                 'epayco_agregador_url_confirmation'          => array(
                     'title'       => __('Página de Confirmación', 'woo-epayco-agregador'),
                     'type'        => 'select',
                     'css' => 'line-height: inherit',
                     'description' => __('Url de la tienda donde Davipay confirma el pago', 'woo-epayco-agregador'),
-                    'options'       => $this->get_pages(__('Seleccionar pagina', 'epayco-woocommerce')),
+                    'options'       => $this->get_pages(__('Seleccionar pagina', 'woo-epayco-agregador')),
                 ),
                 'epayco_agregador_reduce_stock_pending'    => array(
                     'title'       => __('Reducir el stock en transacciones pendientes', 'woo-epayco-agregador'),
@@ -361,18 +361,18 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                 'placeholder' => '3000000',
             ),*/
                 'split_payment' => array(
-                    'title' => __('Habilitar splitpayment', 'epayco_agregador_woocommerce'),
+                    'title' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
                     'type' => 'checkbox',
-                    'label' => __('Habilitar splitpayment', 'epayco_woocommerce'),
-                    'description' => __('Habilitar splitpayment', 'epayco_woocommerce'),
+                    'label' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
+                    'description' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
                     'default' => 'no',
                 ),
                 'split_payment_type' => array(
-                    'title' => __('Tipo de splitpayment', 'epayco_agregador_woocommerce'),
+                    'title' => __('Tipo de splitpayment', 'woo-epayco-agregador'),
                     'type' => 'select',
                     'css' => 'line-height: inherit',
-                    'description' => __('Seleccione el tipo de splitpayment', 'epayco_agregador_woocommerce'),
-                    'options' => array('02' => 'porcentaje', '01' => 'fijo'),
+                    'description' => __('Seleccione el tipo de splitpayment', 'woo-epayco-agregador'),
+                    'options' => array('02' => __('porcentaje', 'woo-epayco-agregador'), '01' => __('fijo', 'woo-epayco-agregador')),
                 ),
             );
             $epayco_langs   = array(
@@ -620,7 +620,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     }
                 }
 
-                $processReturnFailMessage = trim($errorMessage ?: $messageError ?: 'Ocurrió un error de pago.');
+                $processReturnFailMessage = trim($errorMessage ?: $messageError ?: __('Ocurrió un error de pago.', 'woo-epayco-agregador'));
 
                 $processReturnFailMessage = nl2br(htmlspecialchars($processReturnFailMessage, ENT_QUOTES, 'UTF-8'));
                 echo sprintf(
