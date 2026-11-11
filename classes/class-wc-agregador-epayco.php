@@ -1,0 +1,1373 @@
+<?php
+
+if (! defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+class WC_Agregador_Epayco extends WC_Payment_Gateway
+{
+
+    /**
+     * Constructor for the gateway.
+     *
+     * @access public
+     * @return void
+     */
+
+    public $msg;
+    public $epayco_agregador_customerid;
+    public $epayco_agregador_secretkey;
+    public $epayco_agregador_publickey;
+    public $epayco_agregador_privatekey;
+    public $split_payment;
+    public $split_payment_type;
+    public $monto_maximo;
+    public $epayco_agregador_testmode;
+    public $epayco_agregador_reduce_stock_pending;
+    public $epayco_agregador_type_checkout;
+    public $epayco_agregador_endorder_state;
+    public $epayco_agregador_cancelled_endorder_state;
+    public $epayco_agregador_url_response;
+    public $epayco_agregador_url_confirmation;
+    public $epayco_agregador_lang;
+    public $response_data;
+    public $log;
+
+    public function __construct()
+    {
+
+        $this->id= 'epayco_agregador';
+        //$this->version = '8.0.4';
+        $logo_url_s3 = (defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '')
+            ? DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg'
+            : CMS_ROUTE_IMAGES_S3 . 'checkout/payment-methods/logo-checkout-payment-methods.svg';
+        $this->icon = apply_filters('woocommerce_' . $this->id . '_icon', $logo_url_s3);
+        $this->method_title         = __('Davipay Checkout', 'woo-epayco-agregador');
+        $this->method_description   = __('Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador');
+
+        $this->order_button_text = __('Pagar', 'woo-epayco-agregador');
+        $this->has_fields           = false;
+        $this->supports         = array(
+            'products',
+            'refunds',
+        );
+        // Load the settings
+        $this->init_form_fields();
+        $this->init_settings();
+        $this->msg['message']   = "";
+        $this->msg['class']     = "";
+        // Define user set variables
+        $this->title            = $this->get_option('title');
+        $this->epayco_agregador_customerid = $this->get_option('epayco_agregador_customerid');
+        $this->epayco_agregador_secretkey = $this->get_option('epayco_agregador_secretkey');
+        $this->epayco_agregador_publickey = $this->get_option('epayco_agregador_publickey');
+        $this->epayco_agregador_privatekey = $this->get_option('epayco_agregador_privatekey');
+        $this->split_payment = $this->get_option('split_payment');
+        $this->split_payment_type = $this->get_option('split_payment_type');
+        $this->monto_maximo = $this->get_option('monto_maximo');
+        //$this->max_monto = $this->get_option('monto_maximo');
+        $this->description      = $this->get_option('description');
+        $this->epayco_agregador_testmode = $this->get_option('epayco_agregador_testmode');
+        if ($this->get_option('epayco_agregador_reduce_stock_pending') !== null) {
+            $this->epayco_agregador_reduce_stock_pending = $this->get_option('epayco_agregador_reduce_stock_pending');
+        } else {
+            $this->epayco_agregador_reduce_stock_pending = "yes";
+        }
+        $this->epayco_agregador_type_checkout = $this->get_option('epayco_agregador_type_checkout');
+        $this->epayco_agregador_endorder_state = $this->get_option('epayco_agregador_endorder_state');
+        $this->epayco_agregador_cancelled_endorder_state = $this->get_option('epayco_agregador_cancelled_endorder_state');
+        $this->epayco_agregador_url_response = $this->get_option('epayco_agregador_url_response');
+        $this->epayco_agregador_url_confirmation = $this->get_option('epayco_agregador_url_confirmation');
+        $this->epayco_agregador_lang = $this->get_option('epayco_agregador_lang');
+        $this->response_data = $this->get_option('response_data');
+
+        // Actions
+        add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'successful_request'));
+        add_action('ePayco_Agregador_init_validation', array($this, 'ePayco_Agregador_successful_validation'));
+        add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
+
+        // Payment listener/API hook
+        add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'check_ipn_response'));
+        add_action('woocommerce_api_' . strtolower(get_class($this) . "Validation"), array($this, 'validate_ePayco_Agregador_request'));
+
+        if (! $this->is_valid_for_use()) {
+            $this->enabled = false;
+        }
+
+        if ($this->epayco_agregador_testmode == "yes") {
+            if (class_exists('WC_Logger')) {
+                $this->log = new WC_Logger();
+            }
+        }
+    }
+
+
+    function is_valid_for_use()
+    {
+        if (! in_array(get_woocommerce_currency(), array('COP', 'USD'), true)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Admin Panel Options
+     *
+     * @since 6.0.0
+     */
+    public function admin_options()
+    {
+        $validation_url = get_site_url() . "/";
+        $validation_url = add_query_arg('wc-api', get_class($this) . "Validation", $validation_url);
+        $logo_url = get_site_url() . "/";
+        $logo_url = add_query_arg('wc-api', get_class($this) . "ChangeLogo", $logo_url);
+?>
+
+
+        <div class="container-fluid">
+            <div class="panel panel-default" style="">
+                <img src="<?php echo esc_url((defined('DAVIPAY_ROUTE_IMAGES_S3') && trim(DAVIPAY_ROUTE_IMAGES_S3) !== '') ? DAVIPAY_ROUTE_IMAGES_S3 . 'Imagotipo/checkoutSmallWhite_01_v1.svg' : CMS_ROUTE_IMAGES_S3 . 'checkoutSmallWhite_01_v1.svg'); ?>">
+
+                <div id="path_upload" hidden>
+                    <?php esc_html_e($logo_url, 'text_domain'); ?>
+                </div>
+                <div id="path_images" hidden>
+                    <?php echo EPAYCO_AGREGADOR_PLUGIN_URL . 'assets/images' ?>
+                </div>
+                <div id="path_validate" hidden>
+                    <?php esc_html_e($validation_url, 'text_domain'); ?>
+                </div>
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-pencil"></i><?php esc_html_e('Configuración Davipay', 'woo-epayco-agregador'); ?></h3>
+                </div>
+            </div>
+            <div style="color: #31708f; background-color: #d9edf7; border-color: #bce8f1;padding: 10px;border-radius: 5px;">
+                <?php esc_html_e('Este módulo le permite aceptar pagos seguros por la plataforma de pagos Davipay.Si el cliente decide pagar por Davipay, el estado del pedido cambiará a ', 'woo-epayco-agregador'); ?><b>
+                    <?php esc_html_e(' Esperando Pago', 'woo-epayco-agregador'); ?></b>.
+                <br><?php esc_html_e('Cuando el pago sea Aceptado o Rechazado Davipay envía una confirmación a la tienda para cambiar el estado del pedido.', 'woo-epayco-agregador'); ?>
+            </div>
+
+            <?php if ($this->is_valid_for_use()) : ?>
+                <table class="form-table epayco-table">
+                    <?php
+                    // Generate the HTML For the settings form.
+                    $this->generate_settings_html();
+                    ?>
+                    <tr valign="top">
+                        <th scope="row" class="titledesc">
+                            <label for="woocommerce_epayco_agregador_enabled"><?php esc_html_e('Validar llaves', 'woo-epayco-agregador'); ?></label>
+                            <span hidden id="public_key">0</span>
+                            <span hidden id="private_key">0</span>
+                        <td class="forminp">
+                            <form method="post" action="#">
+                                <label for="woocommerce_epayco_agregador_enabled">
+                                </label>
+                                <input type="button" class="button-primary woocommerce-save-button validarA" value="<?php echo esc_attr__('Validar', 'woo-epayco-agregador'); ?>">
+                                <p class="description">
+                                    <?php esc_html_e('Validación de llaves PUBLIC_KEY y PRIVATE_KEY', 'woo-epayco-agregador'); ?>
+                                </p>
+                            </form>
+                            <br>
+                            <!-- The Modal -->
+                            <div id="myModal" class="modal">
+                                <!-- Modal content -->
+                                <div class="modal-content">
+                                    <span class="close">&times;</span>
+                                    <center>
+                                        <img src="<?php echo DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png' ?>">
+                                    </center>
+                                    <p><strong><?php esc_html_e('Llaves de comercio inválidas', 'woo-epayco-agregador'); ?></strong> </p>
+                                    <p><?php esc_html_e('Las llaves Public Key, Private Key insertadas', 'woo-epayco-agregador'); ?><br>
+                                        <?php esc_html_e('del comercio son inválidas.', 'woo-epayco-agregador'); ?><br>
+                                        <?php esc_html_e('Consúltelas en el apartado de integraciones', 'woo-epayco-agregador'); ?> <br>
+                                        <?php esc_html_e('Llaves API en su Dashboard Davipay.', 'woo-epayco-agregador'); ?></p>
+                                </div>
+                            </div>
+
+                        </td>
+                        </th>
+                    </tr>
+                </table><!--/.form-table-->
+            <?php
+            else :
+                $currencies          = array('USD', 'COP');
+                $formated_currencies = '';
+
+                foreach ($currencies as $currency) {
+                    $formated_currencies .= $currency . ', ';
+                }
+            ?>
+
+        </div>
+
+
+
+        <div class="inline error">
+            <p><strong><?php esc_html_e('agregador Disabled', 'woo-epayco-agregador');
+                        ?>
+                </strong>:
+                <?php
+                esc_html_e('Servired/Davipay only support ', 'woo-epayco-agregador');
+                echo esc_html($formated_currencies);
+                ?>
+            </p>
+        </div>
+<?php
+            endif;
+        }
+        /**
+         * Initialise Gateway Settings Form Fields
+         *
+         * @access public
+         * @return void
+         */
+        function init_form_fields()
+        {
+            $this->form_fields = array(
+                'enabled'          => array(
+                    'title'   => __('Habilitar/Deshabilitar', 'woo-epayco-agregador'),
+                    'type'    => 'checkbox',
+                    'label'   => __('Habilitar Davipay', 'woo-epayco-agregador'),
+                    'default' => 'yes',
+                ),
+                'title'            => array(
+                    'title'       => __('<span class="epayco-required">Título</span>', 'woo-epayco-agregador'),
+                    'type'        => 'text',
+                    'description' => __('Corresponde al título que el usuario ve durante el Checkout.', 'woo-epayco-agregador'),
+                    'default'     => __('Paga con Davipay', 'woo-epayco-agregador'),
+                    'desc_tip'    => true,
+                ),
+                'description'      => array(
+                    'title'       => __('<span class="epayco-required">Descripción</span>', 'woo-epayco-agregador'),
+                    'type'        => 'textarea',
+                    'description' => __('Corresponde a la descripción que verá el usuario durante el Checkout', 'woo-epayco-agregador'),
+                    'default'     => __('Davipay: Paga con Tarjeta de crédito/débito nacional e internacional, PSE, Daviplata, Nequi, PayPal, Efectivo, Safetypay y muchos más.', 'woo-epayco-agregador'),
+                ),
+                'epayco_agregador_customerid' => array(
+                    'title'       => __('<span class="epayco-required">P_CUST_ID_CLIENTE</span>', 'woo-epayco-agregador'),
+                    'type'        => 'text',
+                    'description' => __('ID de cliente que lo identifica en Davipay. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'default' => '',
+                    //'desc_tip' => true,
+                    'placeholder' => '',
+                ),
+                'epayco_agregador_secretkey' => array(
+                    'title'       => __('<span class="epayco-required">P_KEY</span>', 'woo-epayco-agregador'),
+                    'type'        => 'text',
+                    'description' => __('LLave para firmar la información enviada y recibida de Davipay. Lo puede encontrar en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'default' => '',
+                    //'desc_tip' => true,
+                    'placeholder' => '',
+                ),
+                'epayco_agregador_publickey' => array(
+                    'title'       => __('<span class="epayco-required">PUBLIC_KEY</span>', 'woo-epayco-agregador'),
+                    'type'        => 'text',
+                    'description' => __('LLave para autenticar y consumir los servicios de Davipay, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'default' => '',
+                    //'desc_tip' => true,
+                    'placeholder' => '',
+                ),
+                'epayco_agregador_privatekey' => array(
+                    'title'       => __('<span class="epayco-required">PRIVATE_KEY</span>', 'woo-epayco-agregador'),
+                    'type'        => 'text',
+                    'description' => __('LLave para autenticar y consumir los servicios de Davipay, Proporcionado en su panel de clientes en la opción configuración', 'woo-epayco-agregador'),
+                    'default' => '',
+                    //'desc_tip' => true,
+                    'placeholder' => '',
+                ),
+                'epayco_agregador_testmode' => array(
+                    'title'       => __('Sitio en pruebas', 'woo-epayco-agregador'),
+                    'type'        => 'checkbox',
+                    'label' => __('Habilitar el modo de pruebas', 'woo-epayco-agregador'),
+                    'description' => __('Habilite para realizar pruebas', 'woo-epayco-agregador'),
+                    'default' => 'no',
+                ),
+                'epayco_agregador_type_checkout'         => array(
+                    'title'       => __('Tipo Checkout', 'woo-epayco-agregador'),
+                    'type'        => 'select',
+                    'css' => 'line-height: inherit',
+                    'label' => __('Seleccione un tipo de Checkout:', 'woo-epayco-agregador'),
+                    'description' => __('(Onpage Checkout, el usuario al pagar permanece en el sitio) ó (Standard Checkout, el usario al pagar es redireccionado a la pasarela de Davipay)', 'woo-epayco-agregador'),
+                    'options' => array('false' => "Onpage Checkout", "true" => "Standard Checkout"),
+                ),
+                'epayco_agregador_endorder_state'     => array(
+                    'title'       => __('Estado Final del Pedido', 'woo-epayco-agregador'),
+                    'type' => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Seleccione el estado del pedido que se aplicará a la hora de aceptar y confirmar el pago de la orden', 'woo-epayco-agregador'),
+                    'options' => array(
+                        'epayco-processing' => __('Davipay Procesando Pago', 'woo-epayco-agregador'),
+                        "epayco-completed" => __('Davipay Pago Completado', 'woo-epayco-agregador'),
+                        'processing' => __('Procesando', 'woo-epayco-agregador'),
+                        "completed" => __('Completado', 'woo-epayco-agregador')
+                    ),
+                ),
+                'epayco_agregador_cancelled_endorder_state'         => array(
+                    'title'       => __('Estado Cancelado del Pedido', 'woo-epayco-agregador'),
+                    'type' => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Seleccione el estado del pedido que se aplicará cuando la transacciónes Cancelada o Rechazada', 'woo-epayco-agregador'),
+                    'options' => array(
+                        'epayco_agregador-cancelled' => __('Davipay Pago Cancelado', 'woo-epayco-agregador'),
+                        "epayco_agregador-failed" => __('Davipay Pago Fallido', 'woo-epayco-agregador'),
+                        'cancelled' => __('Cancelado', 'woo-epayco-agregador'),
+                        "failed" => __('Fallido', 'woo-epayco-agregador')
+                    ),
+                ),
+                'epayco_agregador_url_response'          => array(
+                    'title'       => __('Página de Respuesta', 'woo-epayco-agregador'),
+                    'type'        => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Url de la tienda donde se redirecciona al usuario luego de pagar el pedido', 'woo-epayco-agregador'),
+                    'options'       => $this->get_pages(__('Seleccionar pagina', 'woo-epayco-agregador')),
+                ),
+                'epayco_agregador_url_confirmation'          => array(
+                    'title'       => __('Página de Confirmación', 'woo-epayco-agregador'),
+                    'type'        => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Url de la tienda donde Davipay confirma el pago', 'woo-epayco-agregador'),
+                    'options'       => $this->get_pages(__('Seleccionar pagina', 'woo-epayco-agregador')),
+                ),
+                'epayco_agregador_reduce_stock_pending'    => array(
+                    'title'       => __('Reducir el stock en transacciones pendientes', 'woo-epayco-agregador'),
+                    'type'        => 'checkbox',
+                    'css' => 'line-height: inherit',
+                    'default'     => 'yes',
+                    'description' => sprintf(__('Habilite para reducir el stock en transacciones pendientes', 'woo-epayco-agregador')),
+                ),
+                'epayco_agregador_lang'          => array(
+                    'title'       => __('Idioma del Checkout', 'woo-epayco-agregador'),
+                    'type'        => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Seleccione el idioma del checkout', 'woo-epayco-agregador'),
+                    'default'     => 'es',
+                    'options'     => array(),
+                ),
+                'response_data'     => array(
+                    'title'       => __('Habilitar envió de atributos a través de la URL de respuesta', 'woo-epayco-agregador'),
+                    'type' => 'checkbox',
+                    'label' => __('Habilitar el modo redirección con data', 'woo-epayco-agregador'),
+                    'description' => __('Al habilitar esta opción puede exponer información sensible de sus clientes, el uso de esta opción es bajo su responsabilidad, conozca esta información en el siguiente  <a href="https://docs.davipay.co/payments/checkout#scroll-response-p" target="_blank">link.</a>', 'woo-epayco-agregador'),
+                    'default'     => 'no',
+                ),
+                /*'monto_maximo' => array(
+                'title'       => __( 'Monto máximo', 'woo-epayco-agregador' ),
+                'type'        => 'text',
+                'description' => __( 'Ingresa el monto máximo permitido a pagar por el método de pago', 'woo-epayco-agregador' ),
+                'default' => '3000000',
+                //'desc_tip' => true,
+                'placeholder' => '3000000',
+            ),*/
+                'split_payment' => array(
+                    'title' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
+                    'type' => 'checkbox',
+                    'label' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
+                    'description' => __('Habilitar splitpayment', 'woo-epayco-agregador'),
+                    'default' => 'no',
+                ),
+                'split_payment_type' => array(
+                    'title' => __('Tipo de splitpayment', 'woo-epayco-agregador'),
+                    'type' => 'select',
+                    'css' => 'line-height: inherit',
+                    'description' => __('Seleccione el tipo de splitpayment', 'woo-epayco-agregador'),
+                    'options' => array('02' => __('porcentaje', 'woo-epayco-agregador'), '01' => __('fijo', 'woo-epayco-agregador')),
+                ),
+            );
+            $epayco_langs   = array(
+                '1'      => 'Español',
+                '2'      => 'English - Inglés'
+            );
+
+            foreach ($epayco_langs as $epayco_lang => $valor) {
+                $this->form_fields['epayco_agregador_lang']['options'][$epayco_lang] = $valor;
+            }
+        }
+
+        function get_pages($title = false, $indent = true)
+        {
+            $wp_pages = get_pages('sort_column=menu_order');
+            $page_list = array();
+            if ($title) $page_list[] = $title;
+            foreach ($wp_pages as $page) {
+                $prefix = '';
+                // show indented child pages?
+                if ($indent) {
+                    $has_parent = $page->post_parent;
+                    while ($has_parent) {
+                        $prefix .=  ' - ';
+                        $next_page = get_page($has_parent);
+                        $has_parent = $next_page->post_parent;
+                    }
+                }
+                // add to page list array array
+                $page_list[$page->ID] = $prefix . $page->post_title;
+            }
+            return $page_list;
+        }
+
+        /**
+         * Generate the epayco form
+         *
+         * @param mixed $order_id
+         * @return string
+         */
+        function generate_epayco_agregador_form($order_id)
+        {
+            global $woocommerce;
+            $order = new WC_Order($order_id);
+            $descripcionParts = array();
+            $iva = 0;
+            $ico = 0;
+            $receiversData = [];
+            $isProductoWhitSplit = false;
+            $totalSplitAmount = 0;
+            $tax = $order->get_total_tax();
+            $tax = round($tax, 2);
+
+            $base_tax = $order->get_subtotal() - $order->get_total_discount();
+            foreach ($order->get_items('tax') as $item_id => $item) {
+                if (strtolower($item->get_label()) == 'iva') {
+                    $iva += round($item->get_tax_total(), 2);
+                }
+                if (strtolower($item->get_label()) == 'ico') {
+                    $ico += round($item->get_tax_total(), 2);
+                }
+            }
+
+            $shipping_data_total = 0;
+            $shipping_data_taxes = 0;
+            foreach ($order->get_items('shipping') as $item_id => $item) {
+                $item_data = $item->get_data();
+                $shipping_data_total = $item_data['total'];
+                $shipping_data_taxes        = $item_data['taxes'];
+            }
+            $isSplit = $this->split_payment == "yes" ? true : false;
+            $epayco_tipe_split = $this->split_payment_type;
+            foreach ($order->get_items() as $product) {
+                $epayco_p_cust_id_client = get_post_meta($product["product_id"], 'p_cust_id_client_a');
+                $taxPercent = $this->get_product_tax_rate_percentage($product["product_id"]);
+                $product_tax = 0;
+                foreach ($product["taxes"]["total"] as $clave => $valorProduct) {
+                    if ($product_tax == 0) {
+                        $product_tax = $valorProduct;
+                    }
+                }
+                if (!empty($epayco_p_cust_id_client[0]) && $isSplit) {
+                    $isProductoWhitSplit = true;
+                    $totalSplitAmount = $totalSplitAmount + floatval($product['total']);
+                    //$epayco_tipe_split= get_post_meta( $product["product_id"], 'epayco_ext_a' )[0];
+                    if ($isSplit) {
+                        if (!empty($epayco_p_cust_id_client[0])) {
+                            $receiversa['merchantId'] = (int)$epayco_p_cust_id_client[0];
+                            $epayco_super_product = get_post_meta($product["product_id"], '_super_product_a');
+                            $epayco_epayco_comition = get_post_meta($product["product_id"], 'epayco_comition_a');
+                            $epayco_fee = get_post_meta($product["product_id"], 'epayco_fee');
+                            $productTotalComision = floatval($product['total']) * $product["quantity"];
+                            $taxBase = $productTotalComision;
+                            //$product_tax = ($taxPercent * $productTotalComision)/100;
+                            $receiversa['amount'] = floatval($productTotalComision + $product_tax);
+                            $receiversa['tax'] = round($product_tax, 2);
+                            $receiversa['taxBase'] = round($taxBase, 2);
+                            $receiversa['fee'] = isset($epayco_fee[0]) ? round(floatval($epayco_fee[0]), 2) : 0;
+
+                            if ($epayco_p_cust_id_client[0]) {
+                                array_push($receiversData, $receiversa);
+                            }
+                        }
+                    }
+                }
+                $clearData = str_replace('_', ' ', $this->string_sanitize($product['name']));
+                $descripcionParts[] = $clearData;
+            }
+
+            $receiversWithProduct = [];
+
+            if ($isProductoWhitSplit) {
+                $receivers = array_merge($receiversWithProduct, $receiversData);
+            } else {
+                $receivers = $receiversData;
+            }
+
+            $descripcion = implode(' - ', $descripcionParts);
+            $currency = strtolower(get_woocommerce_currency());
+            $testMode = $this->epayco_agregador_testmode == "yes" ? true : false;
+            $basedCountry = WC()->countries->get_base_country();
+            $external = $this->epayco_agregador_type_checkout == "true" ? 'standard' : 'onepage';
+            $redirect_url = get_site_url() . "/";
+            $redirect_url = add_query_arg('wc-api', get_class($this), $redirect_url);
+            $redirect_url = add_query_arg('order_id', $order_id, $redirect_url);
+            $myIp = $this->getCustomerIp();
+            $lang = $this->epayco_agregador_lang == 1 ? "es" : "en";
+            if ($this->get_option('epayco_agregador_url_confirmation') == 0) {
+                $confirm_url = $redirect_url . '&confirmation=1';
+            } else {
+                $confirm_url = get_permalink($this->get_option('epayco_agregador_url_confirmation'));
+            }
+
+            $name_billing = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+            $address_billing = $order->get_billing_address_1();
+            $phone_billing = @$order->billing_phone;
+            $email_billing = @$order->billing_email;
+
+            //Busca si ya se restauro el stock
+            if (!EpaycoOrderAgregador::ifExist($order_id)) {
+                //si no se restauro el stock restaurarlo inmediatamente
+                EpaycoOrderAgregador::create($order_id, 1);
+                //$this->restore_order_stock($order->get_id(),"decrease");
+            }
+            $orderStatus = "pending";
+            $current_state = $order->get_status();
+            if ($current_state != $orderStatus) {
+                $order->update_status($orderStatus);
+                //$this->restore_order_stock($order->get_id(),"decrease");
+            }
+            $date = new DateTimeImmutable();
+            //$date->getTimestamp()
+            $payload  = array(
+                "test" => $testMode,
+                "name" => $descripcion,
+                "description" => $descripcion,
+                "invoice" => (string)$order->get_id(),
+                "currency" => $currency,
+                "amount" => floatval($order->get_total()),
+                "taxBase" => floatval($base_tax),
+                "tax" => floatval($tax),
+                "taxIco" => floatval($ico),
+                "country" => $basedCountry,
+                "lang" => $lang,
+                "confirmation" => $confirm_url,
+                "response" => $redirect_url,
+                "billing" => [
+                    "name" => $name_billing,
+                    "address" => $address_billing,
+                    "email" => $email_billing,
+                    "mobilePhone" => $phone_billing
+                ],
+                "ip" => $myIp,
+                "extras" => [
+                    "extra1" => (string)$order->get_id(),
+                ],
+                "extrasEpayco" => [
+                    "extra5" => "P20"
+                ],
+                "epaycoMethodsDisable" => [],
+                "method" => "POST",
+                "checkout_version" => "2",
+                "autoClick" => false,
+                "noRedirectOnClose" => true,
+                "forceResponse" => false, //mostrar detalle de orden
+                "uniqueTransactionPerBill" => false,
+            );
+
+            if ($isSplit) {
+                if ($epayco_tipe_split == "02") {
+                    $payload["splitPayment"] = [
+                        "type" => "percentage",
+                        "receivers" => $receivers
+                    ];
+                } else {
+                    $payload["splitPayment"] = [
+                        "type" => "amount",
+                        "receivers" => $receivers
+                    ];
+                }
+            }
+
+            $path = "payment/session/create";
+
+            $tokenResponse = $this->epyacoBerarToken();
+            $bearerToken = ($tokenResponse && isset($tokenResponse['token'])) ? $tokenResponse['token'] : '';
+            $newToken['token'] =  $bearerToken;
+            $epayco_status_session = $this->getEpaycoSessionId($path, $payload, $newToken);
+         
+              if (is_array($epayco_status_session) && isset($epayco_status_session['success']) && $epayco_status_session['success']) {
+                if (isset($epayco_status_session['data']) && is_array($epayco_status_session['data'])) {
+                    $sessionId =  $epayco_status_session['data']['sessionId'];
+                    $payload['sessionId'] = $sessionId;
+                }
+            } else {
+                $messageError = '';
+                if (is_array($epayco_status_session) && isset($epayco_status_session['textResponse'])) {
+                    $messageError = $epayco_status_session['textResponse'];
+                } elseif (is_array($epayco_status_session) && isset($epayco_status_session['titleResponse'])) {
+                    $messageError = $epayco_status_session['titleResponse'];
+                }
+
+                $errorMessage = '';
+                if (isset($epayco_status_session['data']['errors'])) {
+                    $errors = $epayco_status_session['data']['errors'];
+                    if (is_array($errors)) {
+                        foreach ($errors as $error) {
+                            if (isset($error['errorMessage'])) {
+                                $errorMessage .= $error['errorMessage'] . "\n";
+                            }
+                        }
+                    } else {
+                        $errorMessage .= $errors . "\n";
+                    }
+                } elseif (isset($epayco_status_session['data']['error']['errores'])) {
+                    $errores = $epayco_status_session['data']['error']['errores'];
+                    if (is_array($errores)) {
+                        foreach ($errores as $error) {
+                            if (isset($error['errorMessage'])) {
+                                $errorMessage .= $error['errorMessage'] . "\n";
+                            }
+                        }
+                    } else {
+                        $errorMessage .= $errores . "\n";
+                    }
+                }
+
+                $processReturnFailMessage = trim($errorMessage ?: $messageError ?: __('Ocurrió un error de pago.', 'woo-epayco-agregador'));
+
+                $processReturnFailMessage = nl2br(htmlspecialchars($processReturnFailMessage, ENT_QUOTES, 'UTF-8'));
+                  echo sprintf(
+                    '<div style="
+                        display: flex;
+                        align-items: center;
+                        flex-direction: column;
+                    ">
+                        <div>
+                            <img style="width: 80px;" src="%s" alt="" />
+                        </div>
+                        <div style="text-align: center;font-size: large;font-weight: 500;">
+                            <p>"%s"</p>
+                        </div>
+                    </div>',
+                    esc_url(DAVIPAY_ROUTE_IMAGES_S3 . 'admin/credentials/logos/warning/logo-credentials-warning.png'),
+                    $processReturnFailMessage
+                );
+            }
+            $checkout =  base64_encode(json_encode([
+                "sessionId" => $payload['sessionId'],
+                "external" => $external,
+                "test" => $testMode
+            ]));
+            echo sprintf(
+                '
+                <script
+                    src="https://checkout.epayco.co/checkout-v2.js">
+                </script>
+                <script>
+                
+                    var bntPagar = document.getElementById("btn_epayco");
+                    const params = JSON.parse(atob("%s"));
+                    let {
+                        sessionId,
+                        external,
+                        test
+                    } = params;
+                    const checkout = ePayco.checkout.configure({
+                        sessionId: sessionId,
+                        type: external,
+                        test: test
+                    });
+                    var openNewChekout = function () {
+                        checkout.open();
+                    }
+                    checkout.onErrors(errors => {
+                        console.error(errors);
+                        console.log("Event notifying that an error has occurred in the integration");
+                    });
+                    checkout.onClosed(() => {
+                        console.log("Event notifying that the checkout has been closed");
+                    });
+                    var openChekout = function () {
+                        bntPagar.style.pointerEvents = "none";
+                        openNewChekout()
+                    }
+                    bntPagar.addEventListener("click", openChekout);
+            	    openChekout()    
+                </script>
+            </form>
+        </center>
+        ',
+                $checkout
+            );
+            wp_enqueue_script('epayco',  'https://checkout.epayco.co/checkout-v2.js', array(), '8.4.7', null);
+            wc_enqueue_js(
+                '
+            jQuery("#btn_epayco_new").click(function(){
+            console.log("epayco")
+            });
+		 '
+            );
+            return '<form  method="post" id="appGateway">
+		        </form>';
+        }
+
+        function get_product_tax_rate_percentage($product_id)
+        {
+            $product = wc_get_product($product_id);
+            if (! $product) return 0;
+
+            // Clase de impuesto asignada al producto
+            $tax_class = $product->get_tax_class(); // Ej: 'reduced-rate' o ''
+
+            // Obtener tarifas para esa clase de impuesto
+            $tax_rates = WC_Tax::get_rates($tax_class);
+
+            if (empty($tax_rates)) {
+                return 0;
+            }
+
+            // Obtener el primer porcentaje de la lista
+            $rate = reset($tax_rates);
+            return isset($rate['rate']) ? floatval($rate['rate']) : 0;
+        }
+        /**
+         * Process the payment and return the result
+         *
+         * @param int $order_id
+         * @return array
+         */
+        function process_payment($order_id)
+        {
+            $order = new WC_Order($order_id);
+            return array(
+                'result'   => 'success',
+                'redirect' => $order->get_checkout_payment_url(true),
+            );
+        }
+
+        /**
+         * Output for the order received page.
+         * @param $order_id
+         * @return void
+         */
+        function receipt_page($order_id)
+        {
+            echo ' <div class="loader-container">
+                    <div class="loading"></div>
+                </div>
+                <p style="text-align: center;" class="epayco-title">
+                    <span class="animated-points">' . esc_html__('Cargando métodos de pago', 'woo-epayco-agregador') . '</span>
+                    <br><small class="epayco-subtitle"> ' . esc_html__('Si no se cargan automáticamente, haga clic en el botón. Pagar con Davipay', 'woo-epayco-agregador') . '</small>
+                </p>';
+
+            if ($this->epayco_agregador_lang === "2") {
+                 $epaycoButtonImage =  DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-ing.png';
+            } else {
+                  $epaycoButtonImage =  DAVIPAY_ROUTE_IMAGES_S3 . 'checkout/checkout-button/logo-checkout-payment-button-es.png';
+            }
+
+            echo '<p>       
+                 <center>
+                    <a id="btn_epayco" href="#">
+                        <img src="' . $epaycoButtonImage . '">
+                    </a>
+                 </center> 
+               </p>';
+            echo $this->generate_epayco_agregador_form($order_id);
+        }
+
+        /**
+         * Check for Epayco HTTP Notification
+         *
+         * @return void
+         */
+        function check_ipn_response()
+        {
+            @ob_clean();
+            $post = stripslashes_deep($_POST);
+            if (true) {
+                header('HTTP/1.1 200 OK');
+                do_action('valid-' . $this->id . '-standard-ipn-request', $post);
+            } else {
+                wp_die('Do not access this page directly (Davipay)');
+            }
+        }
+
+        function validate_ePayco_Agregador_request()
+        {
+            @ob_clean();
+            if (! empty($_REQUEST)) {
+                header('HTTP/1.1 200 OK');
+                do_action("ePayco_Agregador_init_validation", $_REQUEST);
+            } else {
+                wp_die('Do not access this page directly (Davipay)');
+            }
+        }
+
+        public function getEpaycoSessionId($path, $data, $token)
+        {
+            if ($token) {
+                $headers = [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $token['token'],
+                ];
+                return $this->epayco_realizar_llamada_api($path, $data, $headers);
+            }
+        }
+
+        /**
+         * Successful Payment!
+         *
+         * @access public
+         * @param array $posted
+         * @return void
+         */
+        function successful_request($validationData)
+        {
+            global $woocommerce;
+            $order_id_info = sanitize_text_field($_GET['order_id']);
+            $order_id_explode = explode('=', $order_id_info);
+            $order_id_rpl  = str_replace('?ref_payco', '', $order_id_explode);
+            $order_id = $order_id_rpl[0];
+            $order = new WC_Order($order_id);
+            $isConfirmation = sanitize_text_field($_GET['confirmation']) == 1;
+
+            if ($isConfirmation) {
+                $x_signature = sanitize_text_field($_REQUEST['x_signature']);
+                $x_cod_transaction_state = sanitize_text_field($_REQUEST['x_cod_transaction_state']);
+                $x_ref_payco = sanitize_text_field($_REQUEST['x_ref_payco']);
+                $x_transaction_id = sanitize_text_field($_REQUEST['x_transaction_id']);
+                $x_amount = sanitize_text_field($_REQUEST['x_amount']);
+                $x_currency_code = sanitize_text_field($_REQUEST['x_currency_code']);
+                $x_test_request = trim(sanitize_text_field($_REQUEST['x_test_request']));
+                $x_approval_code = trim(sanitize_text_field($_REQUEST['x_approval_code']));
+                $x_franchise = trim(sanitize_text_field($_REQUEST['x_franchise']));
+                $x_fecha_transaccion = trim(sanitize_text_field($_REQUEST['x_fecha_transaccion']));
+            } else {
+                $ref_payco = sanitize_text_field($_REQUEST['ref_payco']);
+                if (empty($ref_payco)) {
+                    $ref_payco = $order_id_rpl[1];
+                }
+                if (!$ref_payco) {
+                    $explode = explode('=', $order_id);
+                    $ref_payco = $explode[1];
+                }
+
+                if (!$ref_payco) {
+                    if ($this->epayco_agregador_testmode == "yes") {
+                        $order->update_status('epayco_agregador_cancelled');
+                        $order->add_order_note('Pago rechazado');
+                        $this->restore_order_stock($order->get_id());
+                    } else {
+                        $order->update_status('epayco-cancelled');
+                        $order->add_order_note('Pago rechazado');
+                        $this->restore_order_stock($order->get_id());
+                    }
+
+                    /*foreach ($order->get_items() as $item) {
+                    // Get an instance of corresponding the WC_Product object
+                    $product_id = $item->get_product()->id;
+                    $qty = $item->get_quantity(); // Get the item quantity
+                    WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                }*/
+                    wp_safe_redirect(wc_get_checkout_url());
+                    exit();
+                }
+
+                $url = 'https://secure.epayco.co/validation/v1/reference/' . $ref_payco;
+                $response = wp_remote_get($url);
+                $body = wp_remote_retrieve_body($response);
+                $jsonData = @json_decode($body, true);
+                $validationData = $jsonData['data'];
+                $x_signature = trim($validationData['x_signature']);
+                $x_cod_transaction_state = (int)trim($validationData['x_cod_transaction_state']) ?
+                    (int)trim($validationData['x_cod_transaction_state']) : (int)trim($validationData['x_cod_response']);
+                $x_ref_payco = trim($validationData['x_ref_payco']);
+                $x_transaction_id = trim($validationData['x_transaction_id']);
+                $x_amount = trim($validationData['x_amount']);
+                $x_currency_code = trim($validationData['x_currency_code']);
+                $x_test_request = trim($validationData['x_test_request']);
+                $x_approval_code = trim($validationData['x_approval_code']);
+                $x_franchise = trim($validationData['x_franchise']);
+                $x_fecha_transaccion = trim($validationData['x_fecha_transaccion']);
+            }
+
+            // Validamos la firma
+            if ($order_id != "" && $x_ref_payco != "") {
+                $authSignature = $this->authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code);
+            }
+
+            $message = '';
+            $messageClass = '';
+            $current_state = $order->get_status();
+
+            $isTestTransaction = $x_test_request == 'TRUE' ? "yes" : "no";
+            update_option('epayco_agregador_order_status', $isTestTransaction);
+            $isTestMode = get_option('epayco_agregador_order_status') == "yes" ? "true" : "false";
+            $isTestPluginMode = $this->epayco_agregador_testmode;
+            $x_approval_code_value = intval($x_approval_code);
+            if (floatval($order->get_total()) == floatval($x_amount)) {
+                if ("yes" == $isTestPluginMode) {
+                    $validation = true;
+                }
+                if ("no" == $isTestPluginMode) {
+                    if ($x_cod_transaction_state == 1) {
+                        $validation = true;
+                    } else {
+                        if ($x_cod_transaction_state != 1) {
+                            $validation = true;
+                        } else {
+                            $validation = false;
+                        }
+                    }
+                }
+            } else {
+                $validation = false;
+            }
+            if ($authSignature == $x_signature && $validation) {
+                switch ($x_cod_transaction_state) {
+                    case 1: {
+                            if ($isTestMode == "true") {
+                                $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'modo_agregador', esc_attr('pruebas'));
+                                update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                                update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                                update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                                switch ($this->epayco_agregador_endorder_state) {
+                                    case 'epayco-processing': {
+                                            $orderStatus = 'epayco_agregador_processing';
+                                        }
+                                        break;
+                                    case 'epayco-completed': {
+                                            $orderStatus = 'epayco_agregador_completed';
+                                        }
+                                        break;
+                                    case 'processing': {
+                                            $orderStatus = 'processing_test';
+                                        }
+                                        break;
+                                    case 'completed': {
+                                            $orderStatus = 'completed_test';
+                                        }
+                                        break;
+                                }
+                            } else {
+                                $message = "Modo:Producción, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                                update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                                update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                                update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                                $orderStatus = $this->epayco_agregador_endorder_state;
+                            }
+
+                            if (
+                                $current_state == "epayco_agregador_failed" ||
+                                $current_state == "epayco_agregador_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "cancelled" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                            ) {
+                                if (!EpaycoOrderAgregador::ifStockDiscount($order_id)) {
+                                    //se descuenta el stock
+                                    EpaycoOrderAgregador::updateStockDiscount($order_id, 1);
+                                    if ($current_state != $orderStatus) {
+                                        if ($isTestMode == "true") {
+                                            $this->restore_order_stock($order->get_id(), "decrease");
+                                        } else {
+                                            if ($orderStatus == "epayco-processing" || $orderStatus == "epayco-completed") {
+                                                $this->restore_order_stock($order->get_id(), "decrease");
+                                            }
+                                        }
+
+                                        $order->payment_complete($x_ref_payco);
+                                        $order->update_status($orderStatus);
+                                        //$order->add_order_note($message);
+                                    }
+                                }
+                            } else {
+                                //Busca si ya se descontó el stock
+                                if (!EpaycoOrderAgregador::ifStockDiscount($order_id)) {
+                                    //se descuenta el stock
+                                    EpaycoOrderAgregador::updateStockDiscount($order_id, 1);
+                                }
+
+                                if (
+                                    $current_state == "epayco_agregador_processing" ||
+                                    $current_state == "epayco_agregador_completed" ||
+                                    $current_state == "processing_test" ||
+                                    $current_state == "completed_test" ||
+                                    $current_state == "epayco-processing" ||
+                                    $current_state == "epayco-completed" ||
+                                    $current_state == "processing-test" ||
+                                    $current_state == "completed-test" ||
+                                    $current_state == "processing" ||
+                                    $current_state == "completed"
+                                ) {
+                                } else {
+
+                                    $order->payment_complete($x_ref_payco);
+                                    $order->update_status($orderStatus);
+                                    //$order->add_order_note($message);
+                                }
+                            }
+                            echo "1";
+                        }
+                        break;
+                    case 2:
+                    case 4:
+                    case 10:
+                    case 11: {
+                            if (
+                                $current_state == "epayco_agregador_processing" ||
+                                $current_state == "epayco_agregador_completed" ||
+                                $current_state == "processing_test" ||
+                                $current_state == "completed_test" ||
+                                $current_state == "epayco-processing" ||
+                                $current_state == "epayco-completed" ||
+                                $current_state == "processing-test" ||
+                                $current_state == "completed-test" ||
+                                $current_state == "processing" ||
+                                $current_state == "completed"
+                            ) {
+                            } else {
+                                if ($isTestMode == "true") {
+                                    $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                    update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Pruebas'));
+                                } else {
+                                    $message = "Modo:Producción, \nref_dapay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                    update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                                }
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                                update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                                update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                                $messageClass = 'woocommerce-error';
+
+                                if ($current_state == "pending") {
+                                    $order->update_status('cancelled');
+                                    //$this->restore_order_stock($order->get_id(),"increase");
+                                    //$order->add_order_note($message);
+                                }
+                                if ($current_state == "on-hold") {
+                                    $order->update_status('cancelled');
+                                    //$order->add_order_note($message);
+                                }
+                            }
+
+                            echo "2";
+                            if (!$isConfirmation && $clear_cart) {
+                                //$woocommerce->cart->empty_cart();
+                                foreach ($order->get_items() as $item) {
+                                    // Get an instance of corresponding the WC_Product object
+                                    $product_id = $item->get_product()->id;
+                                    $qty = $item->get_quantity(); // Get the item quantity
+                                    //WC()->cart->add_to_cart( $product_id ,(int)$qty);
+                                }
+                                wp_safe_redirect(wc_get_checkout_url());
+                                exit();
+                            }
+                        }
+                        break;
+                    case 3:
+                    case 7: {
+
+                            //Busca si ya se restauro el stock y si se configuro reducir el stock en transacciones pendientes
+                            if (!EpaycoOrderAgregador::ifStockDiscount($order_id) && $this->get_option('epayco_agregador_reduce_stock_pending') != 'yes') {
+                                //actualizar el stock
+                                EpaycoOrderAgregador::updateStockDiscount($order_id, 1);
+                            }
+                            if ($isTestMode == "true") {
+                                $message = "Modo:pruebas, \nref_davipay: " . $x_ref_payco . " \nFecha y hora transacción: " . $x_fecha_transaccion . " \nFranquicia/Medio de pago: " . $x_franchise . " \nCódigo de autorización: " . $x_approval_code;
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'modo_agregador', esc_attr('pruebas'));
+                                update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                                update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                                update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                            } else {
+                                update_post_meta($order->get_id(), 'refDavipay_agregador', esc_attr($x_ref_payco));
+                                update_post_meta($order->get_id(), 'modo_agregador', esc_attr('Producción'));
+                                update_post_meta($order->get_id(), 'fecha_agregador', esc_attr($x_fecha_transaccion));
+                                update_post_meta($order->get_id(), 'franquicia_agregador', esc_attr($x_franchise));
+                                update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
+                            }
+                            $message = 'Pago pendiente de aprobación';
+                            $orderStatus = "on-hold";
+                            if ($current_state != $orderStatus) {
+                                $order->update_status($orderStatus);
+                                //$order->add_order_note($message);
+                                /*if($current_state == "epayco_agregador_failed" ||
+                                $current_state == "epayco_agregador_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                            ){
+                                $this->restore_order_stock($order->get_id(),"decrease");
+                            }*/
+                            }
+                            echo "3";
+                        }
+                        break;
+                    case 6: {
+                            $message = 'Pago Reversada' . $x_ref_payco;
+                            $messageClass = 'woocommerce-error';
+                            $order->update_status('refunded');
+                            $order->add_order_note('Pago Reversado');
+                            $this->restore_order_stock($order->get_id());
+                            echo "6";
+                        }
+                        break;
+                    default: {
+                            if (
+                                $current_state == "epayco_agregador_processing" ||
+                                $current_state == "epayco_agregador_completed" ||
+                                $current_state == "processing_test" ||
+                                $current_state == "completed_test" ||
+                                $current_state == "epayco-processing" ||
+                                $current_state == "epayco-completed" ||
+                                $current_state == "processing-test" ||
+                                $current_state == "completed-test" ||
+                                $current_state == "processing" ||
+                                $current_state == "completed"
+                            ) {
+                            } else {
+                                $message = 'Pago ' . sanitize_text_field($_REQUEST['x_transaction_state']) . $x_ref_payco;
+                                $messageClass = 'woocommerce-error';
+                                $order->update_status('epayco-failed');
+                                $order->add_order_note('Pago fallido o abandonado');
+                                $this->restore_order_stock($order->get_id());
+                            }
+                            echo "default";
+                        }
+                        break;
+                }
+
+                //validar si la transaccion esta pendiente y pasa a rechazada y ya habia descontado el stock
+                if (($current_state == 'pending' || $current_state == 'on-hold') && ((int)$x_cod_transaction_state == 2 || (int)$x_cod_transaction_state == 4) && EpaycoOrderAgregador::ifStockDiscount($order_id)) {
+                    //si no se restauro el stock restaurarlo inmediatamente
+                    $this->restore_order_stock($order_id);
+                };
+            } else {
+                if ($isTestMode == "true") {
+                    if ($x_cod_transaction_state == 1) {
+                        $message = 'Pago exitoso Prueba';
+                        switch ($this->epayco_agregador_endorder_state) {
+                            case 'epayco-processing': {
+                                    $orderStatus = 'epayco_agregador_processing';
+                                }
+                                break;
+                            case 'epayco-completed': {
+                                    $orderStatus = 'epayco_agregador_completed';
+                                }
+                                break;
+                            case 'processing': {
+                                    $orderStatus = 'processing_test';
+                                }
+                                break;
+                            case 'completed': {
+                                    $orderStatus = 'completed_test';
+                                }
+                                break;
+                        }
+                    } else {
+                        if (
+                            $current_state == "epayco_agregador_failed" ||
+                            $current_state == "epayco_agregador_cancelled" ||
+                            $current_state == "failed" ||
+                            $current_state == "cancelled" ||
+                            $current_state == "epayco-cancelled" ||
+                            $current_state == "epayco-failed"
+                        ) {
+                        } else {
+                            if ($isTestPluginMode == "no" && $x_cod_transaction_state == 1) {
+                                $this->restore_order_stock($order->get_id());
+                            }
+                        }
+                    }
+                } else {
+                    if (
+                        $current_state == "epayco_agregador_processing" ||
+                        $current_state == "epayco_agregador_completed" ||
+                        $current_state == "processing_test" ||
+                        $current_state == "completed_test" ||
+                        $current_state == "epayco-processing" ||
+                        $current_state == "epayco-completed" ||
+                        $current_state == "processing-test" ||
+                        $current_state == "completed-test" ||
+                        $current_state == "processing" ||
+                        $current_state == "completed"
+                    ) {
+                    } else {
+                        $message = 'Invalid signature';
+                        $orderStatus = 'epayco-failed';
+                        if ($x_cod_transaction_state != 1 && !empty($x_cod_transaction_state)) {
+                            if (
+                                $current_state == "epayco_agregador_failed" ||
+                                $current_state == "epayco_agregador_cancelled" ||
+                                $current_state == "failed" ||
+                                $current_state == "cancelled" ||
+                                $current_state == "epayco-cancelled" ||
+                                $current_state == "epayco-failed"
+                            ) {
+                            } else {
+                                $this->restore_order_stock($order->get_id());
+                                $order->update_status($orderStatus);
+                                $order->add_order_note($message);
+                                $messageClass = 'error';
+                            }
+                        }
+                   echo esc_html( $x_cod_transaction_state . ' Invalid signature ' . $validation );
+                    }
+                }
+            }
+
+            if (isset($_REQUEST['confirmation'])) {
+                echo esc_html( $x_cod_transaction_state );
+                exit();
+            } else {
+                if ($this->get_option('epayco_agregador_url_response') == 0) {
+                    $redirect_url = $order->get_checkout_order_received_url();
+                } else {
+                    $woocommerce->cart->empty_cart();
+                    $redirect_url = get_permalink($this->get_option('epayco_agregador_url_response'));
+                    $redirect_url = add_query_arg(['ref_payco' => $ref_payco], $redirect_url);
+                }
+            }
+
+            $arguments = array();
+            foreach ($validationData as $key => $value) {
+                $arguments[$key] = $value;
+            }
+
+            unset($arguments["wc-api"]);
+            $arguments['msg'] = urlencode($message);
+            $arguments['type'] = $messageClass;
+            $response_data = $this->response_data == "yes" ? true : false;
+
+            if ($response_data) {
+                $redirect_url = add_query_arg($arguments, $redirect_url);
+            }
+
+            wp_redirect($redirect_url);
+        }
+        public function authSignature($x_ref_payco, $x_transaction_id, $x_amount, $x_currency_code)
+        {
+            $signature = hash(
+                'sha256',
+                trim($this->epayco_agregador_customerid) . '^'
+                    . trim($this->epayco_agregador_secretkey) . '^'
+                    . $x_ref_payco . '^'
+                    . $x_transaction_id . '^'
+                    . $x_amount . '^'
+                    . $x_currency_code
+            );
+            return $signature;
+        }
+        public function epyacoBerarToken()
+        {
+            $publicKey = trim($this->epayco_agregador_publickey);
+            $privateKey = trim($this->epayco_agregador_privatekey);
+            if (!isset($_COOKIE[$publicKey])) {
+                $token = base64_encode($publicKey . ":" . $privateKey);
+                $bearer_token = $token;
+                $cookie_value = $bearer_token;
+                setcookie($publicKey, $cookie_value, time() + (60 * 14), "/");
+            } else {
+                $bearer_token = $_COOKIE[$publicKey];
+            }
+
+            $headers = array(
+                'Content-Type' => 'application/json',
+                'Authorization' => "Basic " . $bearer_token
+            );
+            return $this->epayco_realizar_llamada_api("login", [], $headers);
+        }
+
+        public function epayco_realizar_llamada_api($path, $data, $headers, $method = 'POST')
+        {
+            $this->log = new WC_Logger();
+            $url = 'https://apify.epayco.co/' . $path;
+            //$this->log->add($this->id,"request : " .json_encode($data));
+            $response = wp_remote_post($url, [
+                'headers' => $headers,
+                'body'    => json_encode($data),
+                'timeout' => 15,
+            ]);
+
+            if (is_wp_error($response)) {
+                $error_message = $response->get_error_message();
+                $this->log->add($this->id, "Error when making the API call to Davipay:" . $error_message);
+                error_log("Error when making the API call to Davipay:" . $error_message);
+                return false;
+            } else {
+                $response_body = wp_remote_retrieve_body($response);
+                //$this->log->add($this->id,"respuesta : " . json_encode($response_body));
+                $status_code = wp_remote_retrieve_response_code($response);
+                if ($status_code == 200) {
+                    $responseTransaction = json_decode($response_body, true);
+                    return $responseTransaction;
+                } else {
+                    $this->log->add($this->id, "Error in the Davipay API response, status code " . $status_code);
+                    error_log("Error in the Davipay API response, status code " . $status_code);
+                    $this->log->add($this->id, "Error in the Davipay API response: " . $response_body);
+                    error_log("Error in the Davipay API response: " . $response_body);
+                    return false;
+                }
+            }
+        }
+        /**
+         * @param $validationData
+         */
+        function ePayco_Agregador_successful_validation($validationData)
+        {
+            $username = sanitize_text_field($validationData['epayco_agregador_publickey']);
+            $password = sanitize_text_field($validationData['epayco_agregador_privatey']);
+            $response = wp_remote_post('https://apify.epayco.co/login', array(
+                'headers' => array(
+                    'Authorization' => 'Basic ' . base64_encode($username . ':' . $password),
+                ),
+            ));
+            $data = json_decode(wp_remote_retrieve_body($response));
+            if ($data->token) {
+                echo "success";
+                exit();
+            }
+        }
+
+        function string_sanitize($string, $force_lowercase = true, $anal = false)
+        {
+
+            $strip = array("~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "_", "=", "+", "[", "{", "]", "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;", "â€”", "â€“", "<", ">", "/", "?");
+            $clean = trim(str_replace($strip, "", strip_tags($string)));
+            $clean = preg_replace('/\s+/', "_", $clean);
+            $clean = ($anal) ? preg_replace("/[^a-zA-Z0-9]/", "", $clean) : $clean;
+            return $clean;
+        }
+
+        /**
+         * @param $order_id
+         */
+        public function restore_order_stock($order_id, $operation = 'increase')
+        {
+            $order = wc_get_order($order_id);
+            if (!get_option('woocommerce_manage_stock') == 'yes' && !sizeof($order->get_items()) > 0) {
+                return;
+            }
+            foreach ($order->get_items() as $item) {
+                // Get an instance of corresponding the WC_Product object
+                $product = $item->get_product();
+                $qty = $item->get_quantity(); // Get the item quantity
+                wc_update_product_stock($product, $qty, $operation);
+            }
+        }
+        public function getCustomerIp()
+        {
+            $ipaddress = '';
+            if (isset($_SERVER['HTTP_CLIENT_IP']))
+                $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+            else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+                $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            else if (isset($_SERVER['HTTP_X_FORWARDED']))
+                $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+            else if (isset($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']))
+                $ipaddress = $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
+            else if (isset($_SERVER['HTTP_FORWARDED_FOR']))
+                $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+            else if (isset($_SERVER['HTTP_FORWARDED']))
+                $ipaddress = $_SERVER['HTTP_FORWARDED'];
+            else if (isset($_SERVER['REMOTE_ADDR']))
+                $ipaddress = $_SERVER['REMOTE_ADDR'];
+            else
+                $ipaddress = 'UNKNOWN';
+            return $ipaddress;
+        }
+    }
