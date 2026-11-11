@@ -1,14 +1,14 @@
 <?php
 /**
- * WooCommerce Epayco Agregador
+ * WooCommerce Davipay Agregador
  *
- * @package WooCommerce Epayco Agregador
+ * @package WooCommerce Davipay Agregador
  *
- * Plugin Name: WooCommerce Epayco Agregador
- * Description: Plugin ePayco Agregador for WooCommerce.
- * Version: 8.1.0
- * Author: ePayco
- * Author URI: http://epayco.co
+ * Plugin Name: WooCommerce Davipay Agregador
+ * Description: Plugin Davipay Agregador for WooCommerce.
+ * Version: 9.0.0
+ * Author: Davipay
+ * Author URI: http://davipay.co
  * Tested up to: 6.8.3
  * WC requires at least: 7.4
  * WC tested up to: 9.3.3
@@ -29,6 +29,13 @@ if ( ! defined( 'EPAYCO_AGREGADOR_PLUGIN_DATA_URL' ) ) {
 }
 if ( ! defined( 'EPAYCO_AGREGADOR_PLUGIN_CLASS_PATH' ) ) {
     define( 'EPAYCO_AGREGADOR_PLUGIN_CLASS_PATH', EPAYCO_AGREGADOR_PLUGIN_PATH . 'classes/' );
+}
+
+if ( ! defined( 'DAVIPAY_ROUTE_IMAGES_S3' ) ) {
+    define( 'DAVIPAY_ROUTE_IMAGES_S3', 'http://multimedia.epayco.io/plugins-sdks/' );
+}
+if ( ! defined( 'CMS_ROUTE_IMAGES_S3' ) ) {
+    define( 'CMS_ROUTE_IMAGES_S3', 'https://cms.epayco.co/imagenes/' );
 }
 
 add_action( 'plugins_loaded', 'woocommerce_agregador_epayco_init', 11 );
@@ -108,7 +115,11 @@ function woocommerce_agregador_epayco_block_support() {
 add_action( 'woocommerce_blocks_loaded', 'woocommerce_agregador_epayco_block_support' );
 
 function epayco_agregador_woocommerce_addon_settings_link( $links ) {
-    array_push( $links, '<a href="admin.php?page=wc-settings&tab=checkout&section=epayco_agregador">' . __( 'Configuración' ) . '</a>' );
+    $locale = determine_locale(); 
+    $label = ( strpos( $locale, 'es' ) === 0 ) ? 'Configuración' : 'Settings';
+    $settings_url = admin_url('admin.php?page=wc-settings&tab=checkout&section=epayco_agregador');
+    array_push( $links, '<a href="' . esc_url( $settings_url ) . '">' . esc_html( $label ) . '</a>' );
+
     return $links;
 }
 
@@ -121,75 +132,75 @@ function epayco_agregador_update_db_check()
 add_action('plugins_loaded', 'epayco_agregador_update_db_check');
 function register_epayco_agregador_order_status() {
     register_post_status( 'wc-epayco_agregador-failed', array(
-        'label'                     => 'ePayco Pago Fallido',
+        'label'                     => 'Davipay Pago Fallido',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Fallido <span class="count">(%s)</span>', 'ePayco Pago Fallido <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Fallido <span class="count">(%s)</span>', 'Davipay Pago Fallido <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador_failed', array(
-        'label'                     => 'ePayco Pago Fallido Prueba',
+        'label'                     => 'Davipay Pago Fallido Prueba',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>', 'ePayco Pago Fallido Prueba <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Fallido Prueba <span class="count">(%s)</span>', 'Davipay Pago Fallido Prueba <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador-cancelled', array(
-        'label'                     => 'ePayco Pago Cancelado',
+        'label'                     => 'Davipay Pago Cancelado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Cancelado <span class="count">(%s)</span>', 'ePayco Pago Cancelado <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Cancelado <span class="count">(%s)</span>', 'Davipay Pago Cancelado <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador_cancelled', array(
-        'label'                     => 'ePayco Pago Cancelado Prueba',
+        'label'                     => 'Davipay Pago Cancelado Prueba',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>', 'ePayco Pago Cancelado Prueba <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Cancelado Prueba <span class="count">(%s)</span>', 'Davipay Pago Cancelado Prueba <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador-on-hold', array(
-        'label'                     => 'ePayco Pago Pendiente',
+        'label'                     => 'Davipay Pago Pendiente',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Pendiente <span class="count">(%s)</span>', 'ePayco Pago Pendiente <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Pendiente <span class="count">(%s)</span>', 'Davipay Pago Pendiente <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador_on_hold', array(
-        'label'                     => 'ePayco Pago Pendiente Prueba',
+        'label'                     => 'Davipay Pago Pendiente Prueba',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>', 'ePayco Pago Pendiente Prueba <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Pendiente Prueba <span class="count">(%s)</span>', 'Davipay Pago Pendiente Prueba <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador-processing', array(
-        'label'                     => 'ePayco Procesando Pago',
+        'label'                     => 'Davipay Procesando Pago',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Procesando Pago <span class="count">(%s)</span>', 'ePayco Procesando Pago <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Procesando Pago <span class="count">(%s)</span>', 'Davipay Procesando Pago <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador_processing', array(
-        'label'                     => 'ePayco Procesando Pago Prueba',
+        'label'                     => 'Davipay Procesando Pago Prueba',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Procesando Pago Prueba<span class="count">(%s)</span>', 'ePayco Procesando Pago Prueba<span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Procesando Pago Prueba<span class="count">(%s)</span>', 'Davipay Procesando Pago Prueba<span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-processing', array(
@@ -211,21 +222,21 @@ function register_epayco_agregador_order_status() {
     ));
 
     register_post_status( 'wc-epayco_agregador-completed', array(
-        'label'                     => 'ePayco Pago Completado',
+        'label'                     => 'Davipay Pago Completado',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Completado <span class="count">(%s)</span>', 'ePayco Pago Completado <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Completado <span class="count">(%s)</span>', 'Davipay Pago Completado <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-epayco_agregador_completed', array(
-        'label'                     => 'ePayco Pago Completado Prueba',
+        'label'                     => 'Davipay Pago Completado Prueba',
         'public'                    => true,
         'show_in_admin_status_list' => true,
         'show_in_admin_all_list'    => true,
         'exclude_from_search'       => false,
-        'label_count'               => _n_noop( 'ePayco Pago Completado Prueba <span class="count">(%s)</span>', 'ePayco Pago Completado Prueba <span class="count">(%s)</span>' )
+        'label_count'               => _n_noop( 'Davipay Pago Completado Prueba <span class="count">(%s)</span>', 'Davipay Pago Completado Prueba <span class="count">(%s)</span>' )
     ));
 
     register_post_status( 'wc-completed', array(
@@ -256,33 +267,33 @@ function add_epayco_agregador_to_order_statuses( $order_statuses ) {
         $new_order_statuses[ $key ] = $status;
         if ( 'wc-cancelled' === $key ) {
             if($testMode=="true"){
-                $new_order_statuses['wc-epayco_agregador_cancelled'] = 'ePayco Pago Cancelado Prueba';
+                $new_order_statuses['wc-epayco_agregador_cancelled'] = 'Davipay Pago Cancelado Prueba';
             }else{
-                $new_order_statuses['wc-epayco-cancelled'] = 'ePayco Pago Cancelado';
+                $new_order_statuses['wc-epayco-cancelled'] = 'Davipay Pago Cancelado';
             }
         }
 
         if ( 'wc-failed' === $key ) {
             if($testMode=="true"){
-                $new_order_statuses['wc-epayco_agregador_failed'] = 'ePayco Pago Fallido Prueba';
+                $new_order_statuses['wc-epayco_agregador_failed'] = 'Davipay Pago Fallido Prueba';
             }else{
-                $new_order_statuses['wc-epayco-failed'] = 'ePayco Pago Fallido';
+                $new_order_statuses['wc-epayco-failed'] = 'Davipay Pago Fallido';
             }
         }
 
         if ( 'wc-on-hold' === $key ) {
             if($testMode=="true"){
-                $new_order_statuses['wc-epayco_agregador_on_hold'] = 'ePayco Pago Pendiente Prueba';
+                $new_order_statuses['wc-epayco_agregador_on_hold'] = 'Davipay Pago Pendiente Prueba';
             }else{
-                $new_order_statuses['wc-epayco-on-hold'] = 'ePayco Pago Pendiente';
+                $new_order_statuses['wc-epayco-on-hold'] = 'Davipay Pago Pendiente';
             }
         }
 
         if ( 'wc-processing' === $key ) {
             if($testMode=="true"){
-                $new_order_statuses['wc-epayco_agregador_processing'] = 'ePayco Pago Procesando Prueba';
+                $new_order_statuses['wc-epayco_agregador_processing'] = 'Davipay Pago Procesando Prueba';
             }else{
-                $new_order_statuses['wc-epayco-processing'] = 'ePayco Pago Procesando';
+                $new_order_statuses['wc-epayco-processing'] = 'Davipay Pago Procesando';
             }
         }else {
             if($testMode=="true"){
@@ -294,9 +305,9 @@ function add_epayco_agregador_to_order_statuses( $order_statuses ) {
 
         if ( 'wc-completed' === $key ) {
             if($testMode=="true"){
-                $new_order_statuses['wc-epayco_agregador_completed'] = 'ePayco Pago Completado Prueba';
+                $new_order_statuses['wc-epayco_agregador_completed'] = 'Davipay Pago Completado Prueba';
             }else{
-                $new_order_statuses['wc-epayco-completed'] = 'ePayco Pago Completado';
+                $new_order_statuses['wc-epayco-completed'] = 'Davipay Pago Completado';
             }
         }else{
             if($testMode=="true"){
@@ -534,7 +545,7 @@ function my_custom_checkout_field_display_admin_order_meta_agregador( $order ){
         <div class="order_data_column_container">
             <div class="order_data_column">
                 <div class="address">    
-                    <p><strong>'.__('Pago con ePayco').':</strong> ' . get_post_meta( $order_id, 'refPayco_agregador', true ) . '</p>
+                    <p><strong>'.__('Pago con Davipay').':</strong> ' . get_post_meta( $order_id, 'refPayco_agregador', true ) . '</p>
                     <p><strong>'.__('Modo').':</strong> ' . get_post_meta( $order_id, 'modo_agregador', true ) . '</p>
                 </div>
             </div>
