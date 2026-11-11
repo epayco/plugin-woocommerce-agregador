@@ -4,20 +4,21 @@
 
 ## Versiones
 
-| Versión | URL de repositorio | Versión compatible con Woocommerce | ¿Incluye soporte de ePayco? |
+| Versión | URL de repositorio | Versión compatible con Woocommerce | ¿Incluye soporte de Davipay? |
 | :---:   | :---:     | :---:    | :---:    |
-| 8.1.0   | [ePayco plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.1.0)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 8.0.4   | [ePayco plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.4)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 8.0.3   | [ePayco plugin WooCommerce v8.0.3](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.3)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 8.0.2   | [ePayco plugin WooCommerce v8.0.2](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.2)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 8.0.1   | [ePayco plugin WooCommerce v8.0.1](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.1)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 8.0.0   | [ePayco plugin WooCommerce v8.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.0)     | 8.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 7.2.0   | [ePayco plugin WooCommerce v7.2.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.2.0)     | 7.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 7.1.0   | [ePayco plugin WooCommerce v7.1.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.1.0)     | 7.0.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 7.0.0   | [ePayco plugin WooCommerce v7.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)     | 6.6.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 6.7.4   | [ePayco plugin WooCommerce v6.7.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.4)     | 6.6.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 6.7.1   | [ePayco plugin WooCommerce v6.7.1](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.1)     | 6.6.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
-| 6.7.0   | [ePayco plugin WooCommerce v6.7.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.0)     | 6.4.0 o superior   | ![ePayco support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 9.0.0   | [Davipay plugin WooCommerce v9.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v9.0.0)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.1.0   | [Davipay plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.1.0)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.0.4   | [Davipay plugin WooCommerce v8.0.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.4)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.0.3   | [Davipay plugin WooCommerce v8.0.3](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.3)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.0.2   | [Davipay plugin WooCommerce v8.0.2](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.2)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.0.1   | [Davipay plugin WooCommerce v8.0.1](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.1)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 8.0.0   | [Davipay plugin WooCommerce v8.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.0)     | 8.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 7.2.0   | [Davipay plugin WooCommerce v7.2.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.2.0)     | 7.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 7.1.0   | [Davipay plugin WooCommerce v7.1.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.1.0)     | 7.0.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 7.0.0   | [Davipay plugin WooCommerce v7.0.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v7.0.0)     | 6.6.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 6.7.4   | [Davipay plugin WooCommerce v6.7.4](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.4)     | 6.6.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 6.7.1   | [Davipay plugin WooCommerce v6.7.1](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.1)     | 6.6.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
+| 6.7.0   | [Davipay plugin WooCommerce v6.7.0](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v6.7.0)     | 6.4.0 o superior   | ![Davipay support badge](https://img.shields.io/badge/-style=flat?logo=Verizon&color=black&logoHeight=60) |
 
 ## Tabla de contenido
 
