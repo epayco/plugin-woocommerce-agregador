@@ -1205,13 +1205,13 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 $messageClass = 'error';
                             }
                         }
-                        echo $x_cod_transaction_state . " Invalid signature " . $validation;
+                   echo esc_html( $x_cod_transaction_state . ' Invalid signature ' . $validation );
                     }
                 }
             }
 
             if (isset($_REQUEST['confirmation'])) {
-                echo $x_cod_transaction_state;
+                echo esc_html( $x_cod_transaction_state );
                 exit();
             } else {
                 if ($this->get_option('epayco_agregador_url_response') == 0) {
