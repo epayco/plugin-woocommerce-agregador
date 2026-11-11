@@ -6,7 +6,7 @@
  *
  * Plugin Name: WooCommerce Davipay Agregador
  * Description: Plugin Davipay Agregador for WooCommerce.
- * Version: 8.1.0
+ * Version: 9.0.0
  * Author: Davipay
  * Author URI: http://davipay.co
  * Tested up to: 6.8.3
@@ -35,7 +35,7 @@ if ( ! defined( 'DAVIPAY_ROUTE_IMAGES_S3' ) ) {
     define( 'DAVIPAY_ROUTE_IMAGES_S3', 'http://multimedia.epayco.io/plugins-sdks/' );
 }
 if ( ! defined( 'CMS_ROUTE_IMAGES_S3' ) ) {
-    define( 'CMS_ROUTE_IMAGES_S3', 'https://eks-cms-backend-platforms-service.epayco.io/imagenes/' );
+    define( 'CMS_ROUTE_IMAGES_S3', 'https://cms.epayco.co/imagenes/' );
 }
 
 add_action( 'plugins_loaded', 'woocommerce_agregador_epayco_init', 11 );

@@ -4,7 +4,7 @@ Donate link: https://davipay.com/
 Tags: e-commerce, commerce, wordpress ecommerce, store, sales, sell, shop, shopping, cart, checkout, configurable, davipay
 Requires at least: 7.4
 Tested up to: 6.8.3
-Stable tag: 8.1.0
+Stable tag: 9.0.0
 Requires PHP: 7.4
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -49,6 +49,9 @@ Yes. But it is advisable that you consider using it since it is revealing for br
 
 = 8.1.0 =
 * update Davipay checkout v2
+
+= 9.0.0 =
+* update name 
 
 == Additional Info ==
 **Contribute** [repository on github](https://github.com/davipay/plugin-woocommerce-agregador)
