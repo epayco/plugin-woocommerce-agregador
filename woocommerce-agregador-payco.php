@@ -323,8 +323,8 @@ add_filter( 'wc_order_statuses', 'add_epayco_agregador_to_order_statuses' );
 
 function styling_admin_order_list_agregador() {
     global $pagenow, $post;
-    if( $pagenow != 'edit.php') return; // Exit
-    if( get_post_type($post->ID) != 'shop_order' ) return; // Exit
+    // if( $pagenow != 'edit.php') return; // Exit
+    // if( get_post_type($post->ID) != 'shop_order' ) return; // Exit
     // HERE we set your custom status
     $epayco_agregador_order = get_option('epayco_agregador_order_status');
     $testMode = $epayco_agregador_order == "yes" ? "true" : "false";
