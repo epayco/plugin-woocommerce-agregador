@@ -26,7 +26,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
     public $epayco_agregador_reduce_stock_pending;
     public $epayco_agregador_type_checkout;
     public $epayco_agregador_endorder_state;
-    public $epayco_agregador_cancelled_endorder_state;
+    public $epayco_ag_canc_endorder_state;
     public $epayco_agregador_url_response;
     public $epayco_agregador_url_confirmation;
     public $epayco_agregador_lang;
@@ -75,7 +75,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
         }
         $this->epayco_agregador_type_checkout = $this->get_option('epayco_agregador_type_checkout');
         $this->epayco_agregador_endorder_state = $this->get_option('epayco_agregador_endorder_state');
-        $this->epayco_agregador_cancelled_endorder_state = $this->get_option('epayco_agregador_cancelled_endorder_state');
+        $this->epayco_ag_canc_endorder_state = $this->get_option('epayco_ag_canc_endorder_state');
         $this->epayco_agregador_url_response = $this->get_option('epayco_agregador_url_response');
         $this->epayco_agregador_url_confirmation = $this->get_option('epayco_agregador_url_confirmation');
         $this->epayco_agregador_lang = $this->get_option('epayco_agregador_lang');
@@ -304,7 +304,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         "completed" => __('Completado', 'woo-epayco-agregador')
                     ),
                 ),
-                'epayco_agregador_cancelled_endorder_state'         => array(
+                'epayco_ag_canc_endorder_state'         => array(
                     'title'       => __('Estado Cancelado del Pedido', 'woo-epayco-agregador'),
                     'type' => 'select',
                     'css' => 'line-height: inherit',
@@ -842,7 +842,7 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
 
                 if (!$ref_payco) {
                     if ($this->epayco_agregador_testmode == "yes") {
-                        $order->update_status('epayco_agregador_cancelled');
+                        $order->update_status('epayco_ag_canc');
                         $order->add_order_note('Pago rechazado');
                         $this->restore_order_stock($order->get_id());
                     } else {
@@ -923,11 +923,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 update_post_meta($order->get_id(), 'autorizacion_agregador', esc_attr($x_approval_code));
                                 switch ($this->epayco_agregador_endorder_state) {
                                     case 'epayco-processing': {
-                                            $orderStatus = 'epayco_agregador_processing';
+                                            $orderStatus = 'epayco_ag_proc';
                                         }
                                         break;
                                     case 'epayco-completed': {
-                                            $orderStatus = 'epayco_agregador_completed';
+                                            $orderStatus = 'epayco_ag_compl';
                                         }
                                         break;
                                     case 'processing': {
@@ -950,8 +950,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                             }
 
                             if (
-                                $current_state == "epayco_agregador_failed" ||
-                                $current_state == "epayco_agregador_cancelled" ||
+                                $current_state == "epayco_ag_failed" ||
+                                $current_state == "epayco_ag_canc" ||
                                 $current_state == "failed" ||
                                 $current_state == "cancelled" ||
                                 $current_state == "epayco-cancelled" ||
@@ -982,8 +982,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                                 }
 
                                 if (
-                                    $current_state == "epayco_agregador_processing" ||
-                                    $current_state == "epayco_agregador_completed" ||
+                                    $current_state == "epayco_ag_proc" ||
+                                    $current_state == "epayco_ag_compl" ||
                                     $current_state == "processing_test" ||
                                     $current_state == "completed_test" ||
                                     $current_state == "epayco-processing" ||
@@ -1008,8 +1008,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     case 10:
                     case 11: {
                             if (
-                                $current_state == "epayco_agregador_processing" ||
-                                $current_state == "epayco_agregador_completed" ||
+                                $current_state == "epayco_ag_proc" ||
+                                $current_state == "epayco_ag_compl" ||
                                 $current_state == "processing_test" ||
                                 $current_state == "completed_test" ||
                                 $current_state == "epayco-processing" ||
@@ -1085,8 +1085,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                             if ($current_state != $orderStatus) {
                                 $order->update_status($orderStatus);
                                 //$order->add_order_note($message);
-                                /*if($current_state == "epayco_agregador_failed" ||
-                                $current_state == "epayco_agregador_cancelled" ||
+                                /*if($current_state == "epayco_ag_failed" ||
+                                $current_state == "epayco_ag_canc" ||
                                 $current_state == "failed" ||
                                 $current_state == "epayco-cancelled" ||
                                 $current_state == "epayco-failed"
@@ -1108,8 +1108,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         break;
                     default: {
                             if (
-                                $current_state == "epayco_agregador_processing" ||
-                                $current_state == "epayco_agregador_completed" ||
+                                $current_state == "epayco_ag_proc" ||
+                                $current_state == "epayco_ag_compl" ||
                                 $current_state == "processing_test" ||
                                 $current_state == "completed_test" ||
                                 $current_state == "epayco-processing" ||
@@ -1142,11 +1142,11 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         $message = 'Pago exitoso Prueba';
                         switch ($this->epayco_agregador_endorder_state) {
                             case 'epayco-processing': {
-                                    $orderStatus = 'epayco_agregador_processing';
+                                    $orderStatus = 'epayco_ag_proc';
                                 }
                                 break;
                             case 'epayco-completed': {
-                                    $orderStatus = 'epayco_agregador_completed';
+                                    $orderStatus = 'epayco_ag_compl';
                                 }
                                 break;
                             case 'processing': {
@@ -1160,8 +1160,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         }
                     } else {
                         if (
-                            $current_state == "epayco_agregador_failed" ||
-                            $current_state == "epayco_agregador_cancelled" ||
+                            $current_state == "epayco_ag_failed" ||
+                            $current_state == "epayco_ag_canc" ||
                             $current_state == "failed" ||
                             $current_state == "cancelled" ||
                             $current_state == "epayco-cancelled" ||
@@ -1175,8 +1175,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                     }
                 } else {
                     if (
-                        $current_state == "epayco_agregador_processing" ||
-                        $current_state == "epayco_agregador_completed" ||
+                        $current_state == "epayco_ag_proc" ||
+                        $current_state == "epayco_ag_compl" ||
                         $current_state == "processing_test" ||
                         $current_state == "completed_test" ||
                         $current_state == "epayco-processing" ||
@@ -1191,8 +1191,8 @@ class WC_Agregador_Epayco extends WC_Payment_Gateway
                         $orderStatus = 'epayco-failed';
                         if ($x_cod_transaction_state != 1 && !empty($x_cod_transaction_state)) {
                             if (
-                                $current_state == "epayco_agregador_failed" ||
-                                $current_state == "epayco_agregador_cancelled" ||
+                                $current_state == "epayco_ag_failed" ||
+                                $current_state == "epayco_ag_canc" ||
                                 $current_state == "failed" ||
                                 $current_state == "cancelled" ||
                                 $current_state == "epayco-cancelled" ||
