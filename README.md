@@ -35,7 +35,7 @@
 
 ## Instalación
 
-1. [Descarga el plugin.](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.4)
+1. [Descarga el plugin.](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v9.0.0)
 2. Ingresa al administrador de tu WordPress.
 3. Ingresa a Plugins / Añadir-Nuevo / Subir-Plugin.
 4. Busca el plugin descargado en tu equipo y súbelo como cualquier otro archivo.
