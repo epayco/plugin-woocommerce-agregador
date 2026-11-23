@@ -1,6 +1,6 @@
 # Davipay plugin para WooCommerce v2.6 o superior
 
-**Si usted tiene alguna pregunta o problema, no dude en ponerse en contacto con nuestro soporte técnico: desarrollo@davipay.com.**
+**Si usted tiene alguna pregunta o problema, no dude en ponerse en contacto con nuestro soporte técnico: desarrollo@epayco.com ó desarrolladores@epayco.com**
 
 ## Versiones
 
@@ -35,13 +35,13 @@
 
 ## Instalación
 
-1. [Descarga el plugin.](https://github.com/davipay/plugin-woocommerce-agregador/releases/tag/v8.0.4)
+1. [Descarga el plugin.](https://github.com/epayco/plugin-woocommerce-agregador/releases/tag/v8.0.4)
 2. Ingresa al administrador de tu WordPress.
 3. Ingresa a Plugins / Añadir-Nuevo / Subir-Plugin.
 4. Busca el plugin descargado en tu equipo y súbelo como cualquier otro archivo.
 5. Después de instalar el .zip, lo puedes ver en la lista de plugins instalados; puedes activarlo o desactivarlo.
 6. Para configurar el plugin debes ir a: WooCommerce / Ajustes / Finalizar Compra y ubicar la pestaña Davipay.
-7. Configura el plugin ingresando el **P_CUST_ID_CLIENTE**,**P_KEY**, **PUBLIC_KEY**, **PRIVATE_KEY** los cuales puedes ver en tu [panel de clientes](https://secure.davipay.co/clientes).
+7. Configura el plugin ingresando el **P_CUST_ID_CLIENTE**,**P_KEY**, **PUBLIC_KEY**, **PRIVATE_KEY** los cuales puedes ver en tu [panel de clientes](https://dashboard.davipay.com/configuration).
 8. Selecciona o crea una página de respuesta donde el usuario será devuelto después de finalizar la compra.
 9. Realiza una o varias compras para comprobar que todo esté bien.
 10. Si todo está correcto, recuerda cambiar la variable Modo Prueba a **NO** y empieza a recibir pagos de forma instantánea y segura con Davipay.
